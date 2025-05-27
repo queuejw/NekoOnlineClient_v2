@@ -60,8 +60,8 @@
         app:layout_constraintTop_toBottomOf="@+id/textView13" />
 
     <com.google.android.material.button.MaterialButton
+        style="@style/Widget.Material3Expressive.Button.OutlinedButton"
         android:id="@+id/cancel_button"
-        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"

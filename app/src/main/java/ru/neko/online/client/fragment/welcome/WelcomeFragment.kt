@@ -17,6 +17,7 @@ class WelcomeFragment: Fragment(R.layout.welcome_fragment) {
         val registerButton: MaterialButton = view.findViewById<MaterialButton>(R.id.register_button)
         val loginButton: MaterialButton = view.findViewById<MaterialButton>(R.id.login_button)
         val randomCatIcon: ImageView = view.findViewById<ImageView>(R.id.random_cat_icon)
+        val settings: ImageView = view.findViewById<ImageView>(R.id.server_config_imageview)
         context?.let {
             val size = it.resources.getDimensionPixelSize(R.dimen.neko_display_size)
             randomCatIcon.setImageBitmap(Cat(it, Random.nextLong()).createBitmap(size, size))
@@ -26,6 +27,9 @@ class WelcomeFragment: Fragment(R.layout.welcome_fragment) {
         }
         loginButton.setOnClickListener {
             login()
+        }
+        settings.setOnClickListener {
+            (activity as WelcomeActivity?)?.setFragment(4, false)
         }
     }
     private fun register() {

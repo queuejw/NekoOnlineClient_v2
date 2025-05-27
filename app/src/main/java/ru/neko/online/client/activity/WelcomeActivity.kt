@@ -15,6 +15,7 @@ import ru.neko.online.client.fragment.welcome.CreatePasswordFragment
 import ru.neko.online.client.fragment.welcome.CreateUserNameFragment
 import ru.neko.online.client.fragment.welcome.FinishRegistrationFragment
 import ru.neko.online.client.fragment.welcome.LoginFragment
+import ru.neko.online.client.fragment.welcome.ServerConfigurationFragment
 import ru.neko.online.client.fragment.welcome.WelcomeFragment
 
 class WelcomeActivity : AppCompatActivity() {
@@ -47,6 +48,7 @@ class WelcomeActivity : AppCompatActivity() {
             1 -> LoginFragment()
             2 -> CreatePasswordFragment()
             3 -> FinishRegistrationFragment()
+            4 -> ServerConfigurationFragment()
             else -> WelcomeFragment()
         }
     }
