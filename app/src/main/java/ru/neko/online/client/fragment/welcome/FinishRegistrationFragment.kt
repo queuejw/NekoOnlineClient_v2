@@ -9,7 +9,7 @@ import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 
-class FinishRegistrationFragment: Fragment(R.layout.finish_registration_fragment) {
+class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragment) {
 
     private var cancelButton: MaterialButton? = null
     private var finishRegButton: MaterialButton? = null
@@ -27,12 +27,15 @@ class FinishRegistrationFragment: Fragment(R.layout.finish_registration_fragment
         finishRegButton = view.findViewById<MaterialButton>(R.id.finish_reg_button)
         nicknameTextView = view.findViewById<MaterialTextView>(R.id.registration_username_text)
 
+        (activity as WelcomeActivity?)?.setToolbarTitle("Финиш!")
+
         setUi()
     }
 
     private fun setUi() {
         prefs?.let {
-            nicknameTextView?.text = context?.getString(R.string.username_finish_registration_tip, it.accountUsername)
+            nicknameTextView?.text =
+                context?.getString(R.string.username_finish_registration_tip, it.accountUsername)
         }
         cancelButton?.setOnClickListener {
             (activity as WelcomeActivity?)?.setFragment(-1, true)
@@ -40,5 +43,10 @@ class FinishRegistrationFragment: Fragment(R.layout.finish_registration_fragment
         finishRegButton?.setOnClickListener {
 
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        prefs = null
     }
 }

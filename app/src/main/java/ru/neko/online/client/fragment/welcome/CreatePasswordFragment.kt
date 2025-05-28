@@ -29,6 +29,8 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
         editText2 = view.findViewById<TextInputEditText>(R.id.edit_text_2)
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
+
+        (activity as WelcomeActivity?)?.setToolbarTitle("Безопасность - это важно.")
         setUi()
     }
 
@@ -71,5 +73,10 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
             }
             (activity as WelcomeActivity?)?.setFragment(3, true)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        prefs = null
     }
 }

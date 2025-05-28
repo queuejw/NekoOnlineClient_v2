@@ -17,7 +17,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:title="@string/welcome"
             app:navigationIcon="@drawable/ic_welcome"/>
 
     </com.google.android.material.appbar.AppBarLayout>

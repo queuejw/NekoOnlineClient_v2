@@ -17,4 +17,20 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getString("account_username", "null")
         set(value) = accountPrefs.edit { putString("account_username", value) }
 
+    var serverAddress
+        get() = accountPrefs.getString("server_address", "127.0.0.1")
+        set(value) = accountPrefs.edit { putString("server_address", value) }
+
+    var serverPort
+        get() = accountPrefs.getInt("server_port", 1011)
+        set(value) = accountPrefs.edit { putInt("server_port", value) }
+
+    fun clearServerConfig(): Boolean {
+        accountPrefs.edit {
+            remove("server_port")
+            remove("server_address")
+        }
+        return true
+    }
+
 }

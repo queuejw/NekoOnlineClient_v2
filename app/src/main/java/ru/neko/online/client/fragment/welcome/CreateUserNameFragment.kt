@@ -11,7 +11,7 @@ import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 
-class CreateUserNameFragment: Fragment(R.layout.create_user_name_fragment) {
+class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
 
     private var editText: TextInputEditText? = null
     private var nextButton: MaterialButton? = null
@@ -27,7 +27,7 @@ class CreateUserNameFragment: Fragment(R.layout.create_user_name_fragment) {
         editText = view.findViewById<TextInputEditText>(R.id.edit_text)
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
-
+        (activity as WelcomeActivity?)?.setToolbarTitle("Как тебя зовут?")
         setUi()
     }
 
@@ -65,5 +65,10 @@ class CreateUserNameFragment: Fragment(R.layout.create_user_name_fragment) {
             }
             (activity as WelcomeActivity?)?.setFragment(2, false)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        prefs = null
     }
 }

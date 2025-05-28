@@ -7,7 +7,7 @@ import com.google.android.material.button.MaterialButton
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 
-class LoginFragment: Fragment(R.layout.login_fragment) {
+class LoginFragment : Fragment(R.layout.login_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -15,5 +15,6 @@ class LoginFragment: Fragment(R.layout.login_fragment) {
         register.setOnClickListener {
             (activity as WelcomeActivity?)?.setFragment(0, false)
         }
+        (activity as WelcomeActivity?)?.setToolbarTitle("Вход")
     }
 }

@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:text="Изменение этих настроек может сделать Вашу игру небезопасной. Изменяйте только в том случае, если знаете, что делаете."
+        android:text="Изменение этих настроек может сделать Вашу игру небезопасной или нестабильной. Изменяйте только в том случае, если знаете, что делаете."
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView14" />
@@ -48,7 +48,6 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/server_text_input_layout"
-        style="?attr/textInputFilledStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -66,7 +65,7 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textView18"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -78,7 +77,6 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/port_text_input_layout"
-        style="?attr/textInputFilledStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
@@ -92,7 +90,8 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/port_edit_text"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:inputType="number" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -109,7 +108,7 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button"
+        android:id="@+id/save_server_config_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -120,7 +119,7 @@
         app:layout_constraintTop_toBottomOf="@+id/port_text_input_layout" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/button2"
+        android:id="@+id/cancel_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -128,7 +127,7 @@
         app:icon="@drawable/ic_undo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/save_server_config_button" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

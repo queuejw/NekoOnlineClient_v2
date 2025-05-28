@@ -1,6 +1,7 @@
 package ru.neko.online.client.activity
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -22,24 +23,37 @@ class WelcomeActivity : AppCompatActivity() {
 
     private var fragmentContainer: FragmentContainerView? = null
 
+    private var toolbar: MaterialToolbar? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.welcome_activity)
         fragmentContainer = findViewById<FragmentContainerView>(R.id.fragment_container)
+        toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setUi()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {}
+        })
         setFragment(-1, false)
     }
 
     private fun setUi() {
-        val materialToolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        materialToolbar?.let { v ->
+        toolbar?.let { v ->
             ViewCompat.setOnApplyWindowInsetsListener(v) { view, listener ->
                 val insets = listener.getInsets(WindowInsetsCompat.Type.systemBars())
                 view.updatePadding(insets.left, insets.top, insets.right, 0)
                 WindowInsetsCompat.CONSUMED
             }
         }
+    }
+
+    fun setToolbarTitle(newTitle: String) {
+        toolbar?.title = newTitle
+    }
+
+    fun setDefaultToolbarTitle() {
+        toolbar?.title = getString(R.string.welcome)
     }
 
     private fun getFragment(value: Int): Fragment {

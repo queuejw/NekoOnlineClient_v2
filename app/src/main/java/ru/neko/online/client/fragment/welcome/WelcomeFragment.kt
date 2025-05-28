@@ -10,7 +10,7 @@ import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.Cat
 import kotlin.random.Random
 
-class WelcomeFragment: Fragment(R.layout.welcome_fragment) {
+class WelcomeFragment : Fragment(R.layout.welcome_fragment) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -22,6 +22,7 @@ class WelcomeFragment: Fragment(R.layout.welcome_fragment) {
             val size = it.resources.getDimensionPixelSize(R.dimen.neko_display_size)
             randomCatIcon.setImageBitmap(Cat(it, Random.nextLong()).createBitmap(size, size))
         }
+        (activity as WelcomeActivity?)?.setDefaultToolbarTitle()
         registerButton.setOnClickListener {
             register()
         }
@@ -32,9 +33,11 @@ class WelcomeFragment: Fragment(R.layout.welcome_fragment) {
             (activity as WelcomeActivity?)?.setFragment(4, false)
         }
     }
+
     private fun register() {
         (activity as WelcomeActivity?)?.setFragment(0, false)
     }
+
     private fun login() {
         (activity as WelcomeActivity?)?.setFragment(1, false)
     }
