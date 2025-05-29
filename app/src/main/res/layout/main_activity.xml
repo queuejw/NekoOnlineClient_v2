@@ -9,7 +9,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorSurfaceContainer">
+        android:background="?attr/colorSurfaceContainerHigh">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -33,16 +33,15 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <com.google.android.material.progressindicator.CircularProgressIndicator
-                style="@style/Widget.Material3.CircularProgressIndicator.Small"
+            <com.google.android.material.loadingindicator.LoadingIndicator
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:indeterminate="true" />
+                android:layout_height="wrap_content"/>
 
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_marginStart="4dp"
                 android:text="Synchronization..." />
 
         </androidx.appcompat.widget.LinearLayoutCompat>

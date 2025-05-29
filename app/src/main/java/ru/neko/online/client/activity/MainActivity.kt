@@ -34,18 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = Prefs(this)
-        prefs?.let {
-            if (it.isFirstLaunch) {
-                val intent = Intent(
-                    this,
-                    WelcomeActivity::class.java
-                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK
-                )
-                startActivity(intent)
-                return
-            }
+        if (!configurePrefs()) {
+            return
         }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.main_activity)
@@ -56,6 +46,23 @@ class MainActivity : AppCompatActivity() {
         materialToolbar = findViewById<MaterialToolbar>(R.id.toolbar)
 
         configureUi()
+    }
+
+    private fun configurePrefs(): Boolean {
+        prefs = Prefs(this)
+        prefs?.let {
+            if (it.isFirstLaunch) {
+                val intent = Intent(
+                    this,
+                    WelcomeActivity::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                )
+                startActivity(intent)
+                return false
+            }
+        }
+        return true
     }
 
     private fun configureUi() {
