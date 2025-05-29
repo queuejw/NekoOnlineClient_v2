@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   Copyright (C) 2016 The Android Open Source Project
 
   Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
@@ -12,33 +11,32 @@
   KIND, either express or implied. See the License for the specific language governing
   permissions and limitations under the License.
   -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="?android:attr/listPreferredItemHeightSmall"
-    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
     android:background="?android:attr/selectableItemBackgroundBorderless"
+    android:clipToPadding="false"
     android:gravity="center_horizontal"
-    android:clipToPadding="false">
+    android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:orientation="vertical"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingTop="8dp"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:paddingBottom="8dp">
 
     <ImageView
         android:id="@+id/cat_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10dp"
         android:layout_gravity="center"
+        android:padding="10dp"
         android:scaleType="fitCenter" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/cat_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceListItem"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:textAppearance="?android:attr/textAppearanceListItem" />
 </LinearLayout>
 

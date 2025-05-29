@@ -77,6 +77,7 @@ class WelcomeActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.help_welcome_menu -> {
+                createBottomSheet(R.layout.help_bottomsheet, this)
                 return true
             }
 
