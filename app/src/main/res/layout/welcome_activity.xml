@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_welcome"/>
+            app:navigationIcon="@drawable/ic_fullcat_icon" />
 
     </com.google.android.material.appbar.AppBarLayout>
 

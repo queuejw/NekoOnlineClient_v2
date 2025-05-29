@@ -51,7 +51,7 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
         }
         resetButton?.setOnClickListener {
             context?.let {
-                if(prefs?.clearServerConfig() == true) {
+                if (prefs?.clearServerConfig() == true) {
                     showDialog(it)
                 } else {
                     showErrorDialog(it)
@@ -63,7 +63,7 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
     private fun saveData() {
         var successful = true
         val address = serverEditText?.text.toString()
-        if(address.isEmpty()) {
+        if (address.isEmpty()) {
             successful = false
         } else {
             prefs?.serverAddress = address
@@ -75,7 +75,7 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
             prefs?.serverPort = port.toInt()
         }
         context?.let {
-            if(successful) {
+            if (successful) {
                 showDialog(it)
             } else {
                 showErrorDialog(it)

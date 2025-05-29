@@ -30,7 +30,7 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
 
-        (activity as WelcomeActivity?)?.setToolbarTitle("Безопасность - это важно.")
+        (activity as WelcomeActivity?)?.setToolbarTitle("Безопасность - это важно")
         setUi()
     }
 
@@ -65,13 +65,13 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
         })
 
         cancelButton?.setOnClickListener {
-            (activity as WelcomeActivity?)?.setFragment(-1, true)
+            (activity as WelcomeActivity?)?.setFragment(0, true)
         }
         nextButton?.setOnClickListener {
             editText2?.let {
                 prefs?.accountPassword = it.text.toString()
             }
-            (activity as WelcomeActivity?)?.setFragment(3, true)
+            (activity as WelcomeActivity?)?.setFragment(3, false)
         }
     }
 

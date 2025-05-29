@@ -38,7 +38,7 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                 context?.getString(R.string.username_finish_registration_tip, it.accountUsername)
         }
         cancelButton?.setOnClickListener {
-            (activity as WelcomeActivity?)?.setFragment(-1, true)
+            (activity as WelcomeActivity?)?.setFragment(2, true)
         }
         finishRegButton?.setOnClickListener {
 

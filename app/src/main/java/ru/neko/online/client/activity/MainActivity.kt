@@ -33,16 +33,20 @@ class MainActivity : AppCompatActivity() {
     private var prefs: Prefs? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         prefs = Prefs(this)
         prefs?.let {
-            if(it.isFirstLaunch) {
-                val intent = Intent(this, WelcomeActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (it.isFirstLaunch) {
+                val intent = Intent(
+                    this,
+                    WelcomeActivity::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                )
                 startActivity(intent)
                 return
             }
         }
-        super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.main_activity)
         viewPager = findViewById<ViewPager2>(R.id.viewpager)
