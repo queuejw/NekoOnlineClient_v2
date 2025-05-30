@@ -79,6 +79,28 @@ class MainActivity : AppCompatActivity() {
                 view.updatePadding(insets.left, 0, insets.right, insets.bottom)
                 WindowInsetsCompat.CONSUMED
             }
+            v.setOnItemSelectedListener { item ->
+                when (item.itemId) {
+                    R.id.home_menu -> {
+                        viewPager?.setCurrentItem(0, true)
+                        return@setOnItemSelectedListener true
+                    }
+
+                    R.id.cat_controls_menu -> {
+                        viewPager?.setCurrentItem(1, true)
+                        return@setOnItemSelectedListener true
+                    }
+
+                    R.id.user_menu -> {
+                        viewPager?.setCurrentItem(2, true)
+                        return@setOnItemSelectedListener true
+                    }
+
+                    else -> {
+                        return@setOnItemSelectedListener false
+                    }
+                }
+            }
         }
         viewPager?.let {
             it.adapter = pagerAdapter
@@ -94,28 +116,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             })
-        }
-        bottomNavigation?.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.home_menu -> {
-                    viewPager?.setCurrentItem(0, true)
-                    return@setOnItemSelectedListener true
-                }
-
-                R.id.cat_controls_menu -> {
-                    viewPager?.setCurrentItem(1, true)
-                    return@setOnItemSelectedListener true
-                }
-
-                R.id.user_menu -> {
-                    viewPager?.setCurrentItem(2, true)
-                    return@setOnItemSelectedListener true
-                }
-
-                else -> {
-                    return@setOnItemSelectedListener false
-                }
-            }
         }
     }
 }
