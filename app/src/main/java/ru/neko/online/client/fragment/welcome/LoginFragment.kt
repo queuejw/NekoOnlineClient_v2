@@ -9,12 +9,20 @@ import ru.neko.online.client.activity.WelcomeActivity
 
 class LoginFragment : Fragment(R.layout.login_fragment) {
 
+    private var registerButton: MaterialButton? = null
+    private var loginButton: MaterialButton? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val register = view.findViewById<MaterialButton>(R.id.register_button)
-        register.setOnClickListener {
+        registerButton = view.findViewById<MaterialButton>(R.id.register_button)
+        loginButton = view.findViewById<MaterialButton>(R.id.login_button)
+        (activity as WelcomeActivity?)?.setToolbarTitle("Вход")
+        setUi()
+    }
+
+    private fun setUi() {
+        registerButton?.setOnClickListener {
             (activity as WelcomeActivity?)?.setFragment(0, false)
         }
-        (activity as WelcomeActivity?)?.setToolbarTitle("Вход")
     }
 }

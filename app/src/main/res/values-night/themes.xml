@@ -1,11 +1,13 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.NekoOnline" parent="Theme.Material3Expressive.Dark.NoActionBar">
+    <style name="Theme.NekoOnline.Base" parent="Theme.Material3Expressive.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="materialButtonStyle">@style/Widget.Material3Expressive.Button</item>
-        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Theme.NekoOnline" parent="Theme.NekoOnline.Base">
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>

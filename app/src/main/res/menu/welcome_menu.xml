@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/help_welcome_menu"
+        android:id="@+id/help_menu"
         android:title="Помощь" />
     <item
-        android:id="@+id/about_welcome_menu"
+        android:id="@+id/about_menu"
         android:title="Про игру" />
 </menu>

@@ -5,6 +5,9 @@
         android:id="@+id/settings_menu"
         android:title="Settings" />
     <item
+        android:id="@+id/help_menu"
+        android:title="Помощь" />
+    <item
         android:id="@+id/about_menu"
-        android:title="About" />
+        android:title="Про игру" />
 </menu>

@@ -45,10 +45,8 @@ class WelcomeActivity : AppCompatActivity() {
     }
 
     private fun setUi() {
-        toolbar?.let {
-            setSupportActionBar(it)
-        }
         toolbar?.let { v ->
+            setSupportActionBar(v)
             ViewCompat.setOnApplyWindowInsetsListener(v) { view, listener ->
                 val insets = listener.getInsets(WindowInsetsCompat.Type.systemBars())
                 view.updatePadding(insets.left, insets.top, insets.right, 0)
@@ -76,12 +74,12 @@ class WelcomeActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.help_welcome_menu -> {
+            R.id.help_menu -> {
                 createBottomSheet(R.layout.help_bottomsheet, this)
                 return true
             }
 
-            R.id.about_welcome_menu -> {
+            R.id.about_menu -> {
                 createBottomSheet(R.layout.about_bottomsheet, this)
                 return true
             }
