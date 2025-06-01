@@ -13,6 +13,10 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getString("account_password", "null")
         set(value) = accountPrefs.edit { putString("account_password", value) }
 
+    var accountName
+        get() = accountPrefs.getString("account_name", "null")
+        set(value) = accountPrefs.edit { putString("account_name", value) }
+
     var accountUsername
         get() = accountPrefs.getString("account_username", "null")
         set(value) = accountPrefs.edit { putString("account_username", value) }

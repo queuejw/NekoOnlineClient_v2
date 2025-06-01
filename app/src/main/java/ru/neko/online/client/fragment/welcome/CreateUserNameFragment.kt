@@ -10,6 +10,7 @@ import com.google.android.material.textfield.TextInputEditText
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
+import kotlin.random.Random
 
 class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
 
@@ -61,7 +62,8 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
         }
         nextButton?.setOnClickListener {
             editText?.let {
-                prefs?.accountUsername = it.text.toString()
+                prefs?.accountName = it.text.toString()
+                prefs?.accountUsername = "player${Random.nextInt()}"
             }
             (activity as WelcomeActivity?)?.setFragment(2, false)
         }

@@ -1,8 +1,23 @@
 package ru.neko.online.client.components.network
 
 import android.content.Context
+import android.util.Log
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import ru.neko.online.client.components.AccountPrefs
+import ru.neko.online.client.components.network.serializable.User
+import java.net.SocketException
 
 class NetworkManager(context: Context) {
 
@@ -11,6 +26,37 @@ class NetworkManager(context: Context) {
     private val port: Int = accountPrefs.serverPort
     private val server: String? = accountPrefs.serverAddress
 
-    private val ktorClient: HttpClient = HttpClient()
+    private val ktorClient: HttpClient = createClient()
 
+    private fun createClient(): HttpClient {
+        return HttpClient(Android) {
+            install(ContentNegotiation) {
+                json(Json {
+                    isLenient = true
+                    prettyPrint = true
+                })
+            }
+            install(Logging) {
+                logger = Logger.DEFAULT
+                level = LogLevel.ALL
+            }
+        }
+    }
+
+    fun closeClient() {
+        ktorClient.close()
+    }
+
+    suspend fun register(name: String, username: String, password: String): Int {
+        try {
+            val response = ktorClient.post("http://$server:$port/register") {
+                contentType(ContentType.Application.Json)
+                setBody(User(name, username, password))
+            }
+            return response.status.value
+        } catch (e: SocketException) {
+            Log.e("Network", e.stackTraceToString())
+            return 503
+        }
+    }
 }
