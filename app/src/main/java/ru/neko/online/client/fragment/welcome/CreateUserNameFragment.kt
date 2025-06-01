@@ -7,6 +7,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
@@ -16,6 +17,8 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
     private var editText: TextInputEditText? = null
     private var nextButton: MaterialButton? = null
     private var cancelButton: MaterialButton? = null
+
+    private var usernameInputLayout: TextInputLayout? = null
 
     private var prefs: AccountPrefs? = null
 
@@ -27,6 +30,7 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
         editText = view.findViewById<TextInputEditText>(R.id.edit_text)
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
+        usernameInputLayout = view.findViewById<TextInputLayout>(R.id.usernameInputLayout)
         (activity as WelcomeActivity?)?.setToolbarTitle("Как тебя зовут?")
         setUi()
     }
@@ -50,8 +54,19 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
                 p2: Int,
                 p3: Int
             ) {
-                editText?.let {
-                    nextButton?.isEnabled = p0?.toString()?.isEmpty() == false
+                if (editText != null && usernameInputLayout != null) {
+                    if (editText!!.text != null) {
+                        val username = editText!!.text.toString()
+                        if (username.length > 25) {
+                            usernameInputLayout!!.error = "Слишком длинный никнейм"
+                            nextButton?.isEnabled = false
+                        } else {
+                            nextButton?.isEnabled = true
+                            usernameInputLayout!!.error = null
+                        }
+                    } else {
+                        nextButton?.isEnabled = false
+                    }
                 }
             }
 

@@ -7,6 +7,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
@@ -17,6 +18,9 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
     private var editText2: TextInputEditText? = null
     private var nextButton: MaterialButton? = null
     private var cancelButton: MaterialButton? = null
+
+    private var passwordInputLayout: TextInputLayout? = null
+    private var passwordInputLayout2: TextInputLayout? = null
 
     private var prefs: AccountPrefs? = null
 
@@ -29,9 +33,41 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
         editText2 = view.findViewById<TextInputEditText>(R.id.edit_text_2)
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
+        passwordInputLayout = view.findViewById<TextInputLayout>(R.id.password_text_input_layout_1)
+        passwordInputLayout2 = view.findViewById<TextInputLayout>(R.id.password_text_input_layout_2)
 
         (activity as WelcomeActivity?)?.setToolbarTitle("Безопасность - это важно")
         setUi()
+    }
+
+    private fun checkTextLayouts() {
+        if(passwordInputLayout != null && passwordInputLayout2 != null) {
+            var isBlocked = false
+            if (editText1!!.text != null) {
+                val text = editText1!!.text.toString()
+                if (text.length > 25) {
+                    passwordInputLayout!!.error = "Слишком длинный пароль"
+                    nextButton?.isEnabled = false
+                    isBlocked = true
+                } else {
+                    nextButton?.isEnabled = editText1!!.text.toString() == editText2!!.text.toString()
+                    passwordInputLayout!!.error = null
+                }
+            }
+            if (editText2!!.text != null) {
+                val text = editText2!!.text.toString()
+                if (text.length > 25) {
+                    passwordInputLayout2!!.error = "Слишком длинный пароль"
+                    nextButton?.isEnabled = false
+                    isBlocked = true
+                } else {
+                    if (!isBlocked) {
+                        nextButton?.isEnabled = editText1!!.text.toString() == editText2!!.text.toString()
+                    }
+                    passwordInputLayout2!!.error = null
+                }
+            }
+        }
     }
 
     private fun setUi() {
@@ -53,12 +89,33 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
                 p2: Int,
                 p3: Int
             ) {
-                editText1?.let {
-                    if (p0?.isEmpty() == false) {
-                        nextButton?.isEnabled = p0.toString() == it.text.toString()
-                    } else {
-                        nextButton?.isEnabled = false
-                    }
+                if(editText1 != null && editText2 != null) {
+                    checkTextLayouts()
+                }
+            }
+
+        })
+
+        editText1?.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+            }
+
+            override fun beforeTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int
+            ) {
+                if(editText1 != null && editText2 != null) {
+                    checkTextLayouts()
                 }
             }
 
