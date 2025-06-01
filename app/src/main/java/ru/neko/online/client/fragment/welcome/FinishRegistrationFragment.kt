@@ -3,6 +3,7 @@ package ru.neko.online.client.fragment.welcome
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
@@ -56,11 +57,15 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
         }
     }
 
-    private fun regPlayer(context: Context) {
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setView(R.layout.registration_loading_dialog)
+    private fun createLoadingDialog(context: Context): AlertDialog {
+        return MaterialAlertDialogBuilder(context)
+            .setView(R.layout.loading_dialog)
             .setCancelable(false)
             .create()
+    }
+
+    private fun regPlayer(context: Context) {
+        val dialog = createLoadingDialog(context)
 
         dialog.show()
 

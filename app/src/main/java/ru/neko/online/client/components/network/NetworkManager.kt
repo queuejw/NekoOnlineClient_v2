@@ -11,12 +11,16 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.json.JSONObject
 import ru.neko.online.client.components.AccountPrefs
-import ru.neko.online.client.components.network.serializable.User
+import ru.neko.online.client.components.network.serializable.LoginUser
+import ru.neko.online.client.components.network.serializable.RegUser
 import java.net.SocketException
 
 class NetworkManager(context: Context) {
@@ -51,12 +55,34 @@ class NetworkManager(context: Context) {
         try {
             val response = ktorClient.post("http://$server:$port/register") {
                 contentType(ContentType.Application.Json)
-                setBody(User(name, username, password))
+                setBody(RegUser(name, username, password))
             }
             return response.status.value
         } catch (e: SocketException) {
             Log.e("Network", e.stackTraceToString())
             return 503
+        }
+    }
+
+    suspend fun login(username: String, password: String): Pair<JSONObject?, Int> {
+        try {
+            val response = ktorClient.post("http://$server:$port/login") {
+                contentType(ContentType.Application.Json)
+                setBody(LoginUser(username, password))
+            }
+            val status = response.status.value
+
+            if (status != HttpStatusCode.OK.value) {
+                return Pair(null, status)
+            }
+            val text = response.bodyAsText()
+            val jsonObject = JSONObject(text)
+
+            return Pair(jsonObject, status)
+
+        } catch (e: SocketException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, 503)
         }
     }
 }
