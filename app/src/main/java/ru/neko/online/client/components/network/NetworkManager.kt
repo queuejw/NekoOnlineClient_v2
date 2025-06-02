@@ -22,6 +22,7 @@ import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.serializable.LoginUser
 import ru.neko.online.client.components.network.serializable.RegUser
 import java.net.SocketException
+import java.net.SocketTimeoutException
 
 class NetworkManager(context: Context) {
 
@@ -70,6 +71,9 @@ class NetworkManager(context: Context) {
         } catch (e: SocketException) {
             Log.e("Network", e.stackTraceToString())
             return Pair(null, 503)
+        } catch (e: SocketTimeoutException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, 503)
         }
     }
 
@@ -90,6 +94,9 @@ class NetworkManager(context: Context) {
             return Pair(jsonObject, status)
 
         } catch (e: SocketException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, 503)
+        } catch (e: SocketTimeoutException) {
             Log.e("Network", e.stackTraceToString())
             return Pair(null, 503)
         }

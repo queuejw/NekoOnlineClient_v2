@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -19,7 +20,12 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.neko.online.client.R
@@ -36,13 +42,16 @@ class MainActivity : AppCompatActivity() {
     private var pagerAdapter: FragmentStateAdapter? = null
 
     private var linearLayout: LinearLayoutCompat? = null
+
     private var syncIndicator: LinearLayoutCompat? = null
+    private var connectionSnackbar: Snackbar? = null
 
     private var materialToolbar: MaterialToolbar? = null
 
     private var bottomNavigation: BottomNavigationView? = null
 
     private var prefs: Prefs? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,14 +73,75 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
+        prepareClient(0)
+    }
+
+    private fun editSnackbarText(newText: String) {
+        connectionSnackbar?.setText(newText)
+    }
+
+    private fun createSnackbar() {
+        if (connectionSnackbar == null) {
+            viewPager?.let {
+                connectionSnackbar = Snackbar.make(it, "null", Snackbar.LENGTH_INDEFINITE)
+            }
+        }
+    }
+
+    private fun showSnackbar() {
+        connectionSnackbar?.let {
+            if (it.isShown) it.dismiss()
+            it.show()
+        }
+    }
+
+    private fun prepareClient(attempt: Int) {
+        if (attempt > 3) {
+            showOfflineDialog(this)
+            return
+        }
         lifecycleScope.launch {
-            if (!checkUser(this@MainActivity)) {
+            val results = checkUser(this@MainActivity)
+            val connectionBool = results.second
+            if (!connectionBool) {
+                withContext(Dispatchers.Main) {
+                    createSnackbar()
+                    editSnackbarText("Не удалось подключиться к серверу. Попробуем cнова через 5 секунд")
+                    showSnackbar()
+                }
+                for (i in 5 downTo 0) {
+                    delay(1000)
+                    withContext(Dispatchers.Main) {
+                        editSnackbarText("Не удалось подключиться к серверу. Попробуем cнова через $i секунд")
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    connectionSnackbar?.dismiss()
+                }
+                prepareClient(attempt + 1)
+                cancel()
+            }
+            val dataStatus = results.first
+            if (!dataStatus && connectionBool) {
                 Log.d("Main", "Ошибка входа")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
                 }
             }
         }
+    }
+
+    private fun showOfflineDialog(context: Context) {
+        MaterialAlertDialogBuilder(context)
+            .setTitle("Ой!")
+            .setIcon(R.drawable.ic_error)
+            .setMessage("Не удалось установить связь с сервером. Проверьте подключение к интернету.")
+            .setPositiveButton(android.R.string.ok, null)
+            .setNegativeButton("Поддержка") { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun configurePrefs(): Boolean {
@@ -98,18 +168,20 @@ class MainActivity : AppCompatActivity() {
         if (!hideIndicator) syncIndicator!!.visibility = View.VISIBLE
         syncIndicator!!.animate().translationY(if (hideIndicator) -200f else 0f)
             .alpha(if (hideIndicator) 0f else 1f).setDuration(200).withEndAction {
-            if (hideIndicator) syncIndicator!!.visibility = View.GONE
-        }
+                if (hideIndicator) syncIndicator!!.visibility = View.GONE
+            }
     }
 
-    private suspend fun checkUser(context: Context): Boolean {
+    // first - data status
+    // second - connection status
+    private suspend fun checkUser(context: Context): Pair<Boolean, Boolean> {
         var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
         val username = accountPrefs?.accountUsername
         val password = accountPrefs?.accountPassword
 
         if (username == null || password == null) {
-            return false
+            return Pair(false, false)
         }
         withContext(Dispatchers.Main) {
             animateSyncIndicator(false)
@@ -118,16 +190,19 @@ class MainActivity : AppCompatActivity() {
         val result = network.login(username, password)
 
         val jsonObj = result.first
+        val status = result.second
 
         withContext(Dispatchers.Main) {
             network.closeClient()
+            animateSyncIndicator(true)
+        }
+        if (status == HttpStatusCode.ServiceUnavailable.value) {
+            return Pair(false, false)
         }
         if (jsonObj == null) {
             accountPrefs = null
-            withContext(Dispatchers.Main) {
-                animateSyncIndicator(true)
-            }
-            return false
+            return Pair(false, true)
+
         } else {
             val token = jsonObj.get("token").toString()
             val id = jsonObj.get("id").toString().toLong()
@@ -135,18 +210,20 @@ class MainActivity : AppCompatActivity() {
             val userToken = accountPrefs.userToken
             val userId = accountPrefs.userId
 
-            withContext(Dispatchers.Main) {
-                animateSyncIndicator(true)
-            }
+            Log.d("NET", "Server token - $token")
+            Log.d("NET", "Local token - $userToken")
+
+            Log.d("NET", "Server id - $id")
+            Log.d("NET", "Local id - $userId")
 
             if (userToken == null) {
-                return false
+                return Pair(false, true)
             }
 
             val bool = (token == userToken) && (id == userId)
 
             accountPrefs = null
-            return bool
+            return Pair(bool, true)
         }
     }
 
@@ -202,6 +279,12 @@ class MainActivity : AppCompatActivity() {
                 }
             })
         }
+    }
+
+    override fun onDestroy() {
+        connectionSnackbar = null
+        prefs = null
+        super.onDestroy()
     }
 }
 

@@ -45,4 +45,14 @@ class AccountPrefs(context: Context) {
         return true
     }
 
+    fun clearUserData(): Boolean {
+        accountPrefs.edit {
+            remove("user_token")
+            remove("user_id")
+            remove("account_password")
+            remove("account_name")
+        }
+        return true
+    }
+
 }

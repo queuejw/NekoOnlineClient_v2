@@ -10,4 +10,8 @@
     <item
         android:id="@+id/about_menu"
         android:title="Про игру" />
+
+    <item
+        android:id="@+id/exit_menu"
+        android:title="Выход" />
 </menu>
