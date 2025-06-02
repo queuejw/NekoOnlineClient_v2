@@ -20,6 +20,7 @@ import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
+import ru.neko.online.client.components.network.serializable.RegUser
 import ru.neko.online.client.config.Prefs
 
 class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragment) {
@@ -77,7 +78,7 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
             prefs?.let {
                 val network = NetworkManager(context)
                 val result =
-                    network.register(it.accountName!!, it.accountUsername!!, it.accountPassword!!)
+                    network.networkPost("register", RegUser(it.accountName!!, it.accountUsername!!, it.accountPassword!!))
 
                 val status = result.second
                 val jsonObj = result.first
@@ -107,8 +108,8 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                         finishRegButton?.isEnabled = true
                     }
                 } else {
-                    val token = jsonObj.get("token").toString()
-                    val id = jsonObj.get("id").toString().toLong()
+                    val token = jsonObj.getString("token")
+                    val id = jsonObj.getLong("id")
 
                     var accountPrefs: AccountPrefs? = AccountPrefs(context)
                     var appPrefs: Prefs? = Prefs(context)

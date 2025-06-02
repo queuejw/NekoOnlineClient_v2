@@ -19,8 +19,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
 import ru.neko.online.client.components.AccountPrefs
-import ru.neko.online.client.components.network.serializable.LoginUser
-import ru.neko.online.client.components.network.serializable.RegUser
 import java.net.SocketException
 import java.net.SocketTimeoutException
 
@@ -52,36 +50,11 @@ class NetworkManager(context: Context) {
         ktorClient.close()
     }
 
-    suspend fun register(name: String, username: String, password: String): Pair<JSONObject?, Int> {
+    suspend fun networkPost(path: String, body: Any): Pair<JSONObject?, Int> {
         try {
-            val response = ktorClient.post("http://$server:$port/register") {
+            val response = ktorClient.post("http://$server:$port/$path") {
                 contentType(ContentType.Application.Json)
-                setBody(RegUser(name, username, password))
-            }
-            val status = response.status.value
-
-            if (status != HttpStatusCode.OK.value) {
-                return Pair(null, status)
-            }
-            val text = response.bodyAsText()
-            val jsonObject = JSONObject(text)
-
-            return Pair(jsonObject, status)
-
-        } catch (e: SocketException) {
-            Log.e("Network", e.stackTraceToString())
-            return Pair(null, 503)
-        } catch (e: SocketTimeoutException) {
-            Log.e("Network", e.stackTraceToString())
-            return Pair(null, 503)
-        }
-    }
-
-    suspend fun login(username: String, password: String): Pair<JSONObject?, Int> {
-        try {
-            val response = ktorClient.post("http://$server:$port/login") {
-                contentType(ContentType.Application.Json)
-                setBody(LoginUser(username, password))
+                setBody(body)
             }
             val status = response.status.value
 

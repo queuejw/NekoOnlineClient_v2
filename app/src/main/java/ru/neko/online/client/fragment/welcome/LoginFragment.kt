@@ -22,6 +22,7 @@ import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
+import ru.neko.online.client.components.network.serializable.LoginUser
 import ru.neko.online.client.config.Prefs
 
 class LoginFragment : Fragment(R.layout.login_fragment) {
@@ -97,7 +98,7 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
             if (username.isNotEmpty() && password.isNotEmpty()) {
                 lifecycleScope.launch {
                     val network = NetworkManager(context)
-                    val result = network.login(username, password)
+                    val result = network.networkPost("login", LoginUser(username, password))
 
                     val status = result.second
                     val jsonObj = result.first
@@ -127,8 +128,8 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                             }
                         }
                     } else {
-                        val token = jsonObj.get("token").toString()
-                        val id = jsonObj.get("id").toString().toLong()
+                        val token = jsonObj.getString("token")
+                        val id = jsonObj.getLong("id")
 
                         var accountPrefs: AccountPrefs? = AccountPrefs(context)
                         var appPrefs: Prefs? = Prefs(context)

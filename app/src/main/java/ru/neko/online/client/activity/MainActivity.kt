@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +33,7 @@ import kotlinx.coroutines.withContext
 import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
+import ru.neko.online.client.components.network.serializable.TokenUser
 import ru.neko.online.client.config.Prefs
 import ru.neko.online.client.fragment.game.CatControlsFragment
 import ru.neko.online.client.fragment.game.HomeFragment
@@ -68,6 +71,8 @@ class MainActivity : AppCompatActivity() {
         syncIndicator = findViewById<LinearLayoutCompat>(R.id.sync_indicator)
         materialToolbar = findViewById<MaterialToolbar>(R.id.toolbar)
 
+        setSupportActionBar(materialToolbar)
+
         configureUi()
     }
 
@@ -98,10 +103,11 @@ class MainActivity : AppCompatActivity() {
     private fun prepareClient(attempt: Int) {
         if (attempt > 3) {
             showOfflineDialog(this)
+            connectionSnackbar = null
             return
         }
         lifecycleScope.launch {
-            val results = checkUser(this@MainActivity)
+            val results = getUserData(this@MainActivity)
             val connectionBool = results.second
             if (!connectionBool) {
                 withContext(Dispatchers.Main) {
@@ -123,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             }
             val dataStatus = results.first
             if (!dataStatus && connectionBool) {
-                Log.d("Main", "Ошибка входа")
+                Log.d("Main", "Ошибка при получении данных")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
                 }
@@ -134,7 +140,7 @@ class MainActivity : AppCompatActivity() {
     private fun showOfflineDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
             .setTitle("Ой!")
-            .setIcon(R.drawable.ic_error)
+            .setIcon(R.drawable.ic_cloud_off)
             .setMessage("Не удалось установить связь с сервером. Проверьте подключение к интернету.")
             .setPositiveButton(android.R.string.ok, null)
             .setNegativeButton("Поддержка") { _, _ ->
@@ -174,20 +180,19 @@ class MainActivity : AppCompatActivity() {
 
     // first - data status
     // second - connection status
-    private suspend fun checkUser(context: Context): Pair<Boolean, Boolean> {
+    private suspend fun getUserData(context: Context): Pair<Boolean, Boolean> {
         var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
-        val username = accountPrefs?.accountUsername
-        val password = accountPrefs?.accountPassword
+        val token = accountPrefs?.userToken
 
-        if (username == null || password == null) {
+        if (token == null) {
             return Pair(false, false)
         }
         withContext(Dispatchers.Main) {
             animateSyncIndicator(false)
         }
         val network = NetworkManager(context)
-        val result = network.login(username, password)
+        val result = network.networkPost("userprefs", TokenUser(token))
 
         val jsonObj = result.first
         val status = result.second
@@ -204,26 +209,16 @@ class MainActivity : AppCompatActivity() {
             return Pair(false, true)
 
         } else {
-            val token = jsonObj.get("token").toString()
-            val id = jsonObj.get("id").toString().toLong()
 
-            val userToken = accountPrefs.userToken
-            val userId = accountPrefs.userId
-
-            Log.d("NET", "Server token - $token")
-            Log.d("NET", "Local token - $userToken")
-
-            Log.d("NET", "Server id - $id")
-            Log.d("NET", "Local id - $userId")
-
-            if (userToken == null) {
-                return Pair(false, true)
-            }
-
-            val bool = (token == userToken) && (id == userId)
+            val name = jsonObj.getString("name")
+            val ncoins = jsonObj.getInt("ncoins")
+            val food = jsonObj.getInt("food")
+            val water = jsonObj.getInt("water")
+            val toys = jsonObj.getInt("toys")
 
             accountPrefs = null
-            return Pair(bool, true)
+
+            return Pair(true, true)
         }
     }
 
@@ -278,6 +273,46 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             })
+        }
+    }
+
+    private fun exit(context: Context) {
+        var accountPrefs: AccountPrefs? = AccountPrefs(context)
+        accountPrefs?.clearUserData()
+        accountPrefs = null
+        var prefs: Prefs? = Prefs(context)
+        prefs?.isFirstLaunch = true
+        prefs = null
+
+        recreate()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.exit_menu -> {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Внимание!")
+                    .setIcon(R.drawable.ic_login)
+                    .setMessage("Вы точно хотите выйти из этого аккаунта?")
+                    .setPositiveButton("Да") { _, _ ->
+                        exit(this)
+                    }
+                    .setNegativeButton("Нет", null)
+                    .setCancelable(false)
+                    .show()
+                return true
+            }
+
+            R.id.about_menu -> {
+                return true
+            }
+
+            else -> return super.onContextItemSelected(item)
         }
     }
 
