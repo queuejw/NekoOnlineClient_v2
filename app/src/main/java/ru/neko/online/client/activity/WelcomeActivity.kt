@@ -113,7 +113,7 @@ class WelcomeActivity : AppCompatActivity() {
         fragmentContainer?.let {
             it.animate().alpha(0f).translationX(translation).setDuration(150).withEndAction {
                 it.translationX = if (inverseTranslation) -125f else 125f
-                supportFragmentManager.commit {
+                supportFragmentManager.commit(true) {
                     replace(it.id, getFragment(fragment))
                 }
                 it.animate().alpha(1f).translationX(0f).setDuration(150).start()
