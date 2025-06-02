@@ -1,9 +1,11 @@
 package ru.neko.online.client.fragment.welcome
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
@@ -14,9 +16,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.neko.online.client.R
+import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
+import ru.neko.online.client.config.Prefs
 
 class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragment) {
 
@@ -74,27 +78,62 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                 val network = NetworkManager(context)
                 val result =
                     network.register(it.accountName!!, it.accountUsername!!, it.accountPassword!!)
+
+                val status = result.second
+                val jsonObj = result.first
+
                 withContext(Dispatchers.Main) {
                     network.closeClient()
-                    dialog.dismiss()
-                    when (result) {
-                        HttpStatusCode.OK.value -> showSuccessDialog(context)
-                        HttpStatusCode.ServiceUnavailable.value -> showErrorDialog(
-                            context,
-                            "Нам не удалось подключиться к серверу. Проверьте подключение к интернету или попробуйте позже."
-                        )
+                }
+                if (jsonObj == null) {
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                        when (status) {
+                            HttpStatusCode.ServiceUnavailable.value -> showErrorDialog(
+                                context,
+                                "Нам не удалось подключиться к серверу. Проверьте подключение к интернету или попробуйте позже."
+                            )
 
-                        HttpStatusCode.Conflict.value -> showErrorDialog(
-                            context,
-                            "Аккаунт с таким никнеймом уже существует. Попробуйте ввести другой никнейм."
-                        )
+                            HttpStatusCode.Conflict.value -> showErrorDialog(
+                                context,
+                                "Аккаунт с таким никнеймом уже существует. Попробуйте ввести другой никнейм."
+                            )
 
-                        else -> showErrorDialog(
-                            context,
-                            "Нам не получилось создать аккаунт. Попробуйте ещё раз. Если не получается, попробуйте создать аккаунт позже или обратитесь к нам."
-                        )
+                            else -> showErrorDialog(
+                                context,
+                                "Нам не получилось создать аккаунт. Попробуйте ещё раз. Если не получается, попробуйте создать аккаунт позже или обратитесь к нам."
+                            )
+                        }
+                        finishRegButton?.isEnabled = true
                     }
-                    finishRegButton?.isEnabled = true
+                } else {
+                    val token = jsonObj.get("token").toString()
+                    val id = jsonObj.get("id").toString().toLong()
+
+                    var accountPrefs: AccountPrefs? = AccountPrefs(context)
+                    var appPrefs: Prefs? = Prefs(context)
+                    accountPrefs?.apply {
+                        userToken = token
+                        userId = id
+                    }
+                    accountPrefs = null
+                    withContext(Dispatchers.Main) {
+                        dialog.dismiss()
+                        when (status) {
+                            HttpStatusCode.OK.value -> {
+                                appPrefs?.apply {
+                                    isFirstLaunch = false
+                                }
+                                appPrefs = null
+                                showSuccessDialog(context)
+                            }
+
+                            else -> showErrorDialog(
+                                context,
+                                "Нам не получилось создать аккаунт. Попробуйте ещё раз. Если не получается, попробуйте создать аккаунт позже или обратитесь к нам."
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -103,8 +142,17 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
     private fun showSuccessDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
             .setTitle("Добро пожаловать!")
-            .setMessage("Аккаунт успешно создан. Давайте начнём игру!")
-            .setPositiveButton("Начать", null)
+            .setIcon(R.drawable.ic_fullcat_icon)
+            .setMessage("Аккаунт успешно создан.\nДавайте начнём игру!")
+            .setPositiveButton("Начать") { _, _ ->
+                val intent = Intent(
+                    context,
+                    MainActivity::class.java
+                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK
+                )
+                startActivity(intent)
+            }
             .setCancelable(false)
             .show()
     }
@@ -115,7 +163,9 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
             .setIcon(R.drawable.ic_error)
             .setMessage(errorMessage)
             .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton("Поддержка", null)
+            .setNegativeButton("Поддержка") { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
+            }
             .setCancelable(false)
             .show()
     }

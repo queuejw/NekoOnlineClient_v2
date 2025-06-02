@@ -51,16 +51,25 @@ class NetworkManager(context: Context) {
         ktorClient.close()
     }
 
-    suspend fun register(name: String, username: String, password: String): Int {
+    suspend fun register(name: String, username: String, password: String): Pair<JSONObject?, Int> {
         try {
             val response = ktorClient.post("http://$server:$port/register") {
                 contentType(ContentType.Application.Json)
                 setBody(RegUser(name, username, password))
             }
-            return response.status.value
+            val status = response.status.value
+
+            if (status != HttpStatusCode.OK.value) {
+                return Pair(null, status)
+            }
+            val text = response.bodyAsText()
+            val jsonObject = JSONObject(text)
+
+            return Pair(jsonObject, status)
+
         } catch (e: SocketException) {
             Log.e("Network", e.stackTraceToString())
-            return 503
+            return Pair(null, 503)
         }
     }
 

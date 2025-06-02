@@ -17,6 +17,14 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getString("account_name", "null")
         set(value) = accountPrefs.edit { putString("account_name", value) }
 
+    var userToken
+        get() = accountPrefs.getString("user_token", "null")
+        set(value) = accountPrefs.edit { putString("user_token", value) }
+
+    var userId
+        get() = accountPrefs.getLong("user_id", -1)
+        set(value) = accountPrefs.edit { putLong("user_id", value) }
+
     var accountUsername
         get() = accountPrefs.getString("account_username", "null")
         set(value) = accountPrefs.edit { putString("account_username", value) }

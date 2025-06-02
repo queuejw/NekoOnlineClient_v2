@@ -1,11 +1,13 @@
 package ru.neko.online.client.fragment.welcome
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
@@ -16,8 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.neko.online.client.R
+import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
+import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
+import ru.neko.online.client.config.Prefs
 
 class LoginFragment : Fragment(R.layout.login_fragment) {
 
@@ -97,6 +102,10 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                     val status = result.second
                     val jsonObj = result.first
 
+                    withContext(Dispatchers.Main) {
+                        network.closeClient()
+                    }
+
                     if (jsonObj == null) {
                         withContext(Dispatchers.Main) {
                             dialog.dismiss()
@@ -118,11 +127,42 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                             }
                         }
                     } else {
-                        val token = jsonObj.get("token")
-                        val id = jsonObj.get("id")
+                        val token = jsonObj.get("token").toString()
+                        val id = jsonObj.get("id").toString().toLong()
 
-                        withContext(Dispatchers.Main) {
-                            dialog.dismiss()
+                        var accountPrefs: AccountPrefs? = AccountPrefs(context)
+                        var appPrefs: Prefs? = Prefs(context)
+                        accountPrefs?.apply {
+                            userToken = token
+                            userId = id
+                        }
+                        if (status != HttpStatusCode.OK.value) {
+                            accountPrefs = null
+                            appPrefs = null
+                            withContext(Dispatchers.Main) {
+                                dialog.dismiss()
+                                showErrorDialog(context, "Не удалось войти в ваш аккаунт из-за неизвестной ошибки. Попробуйте ещё раз. Если всё ещё не получается, обратитесь в поддержку.")
+                            }
+                        } else {
+                            appPrefs?.apply {
+                                isFirstLaunch = false
+                            }
+                            accountPrefs?.apply {
+                                accountPassword = password
+                                accountUsername = username
+                            }
+                            accountPrefs = null
+                            appPrefs = null
+                            withContext(Dispatchers.Main) {
+                                dialog.dismiss()
+                                val intent = Intent(
+                                    context,
+                                    MainActivity::class.java
+                                ).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK).addFlags(
+                                    Intent.FLAG_ACTIVITY_NEW_TASK
+                                )
+                                startActivity(intent)
+                            }
                         }
                     }
                 }
@@ -136,7 +176,9 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
             .setIcon(R.drawable.ic_error)
             .setMessage(errorMessage)
             .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton("Поддержка", null)
+            .setNegativeButton("Поддержка") { _, _ ->
+                startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
+            }
             .setCancelable(false)
             .show()
     }
