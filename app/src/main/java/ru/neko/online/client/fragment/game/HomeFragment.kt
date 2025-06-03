@@ -7,39 +7,54 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ru.neko.online.client.R
 import ru.neko.online.client.components.Cat
+import ru.neko.online.client.components.models.CatModel
+import ru.neko.online.client.components.viewmodels.MainViewModel
+import kotlin.getValue
 
 class HomeFragment : Fragment(R.layout.home_fragment) {
 
     private var recyclerView: RecyclerView? = null
     private var mAdapter: CatAdapter? = null
 
+    private val viewModel: MainViewModel by activityViewModels()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById<RecyclerView>(R.id.cat_list)
+        val catsData = viewModel.catsLiveData
+        catsData.value?.let { data ->
+            mAdapter = CatAdapter(requireContext(), getNormalCatList(data, requireContext()))
+        }
+        catsData.observe(viewLifecycleOwner) {
+            mAdapter?.setNewCats(getNormalCatList(it, requireContext()))
+        }
         recyclerView?.let {
-            mAdapter = CatAdapter(it.context)
             it.adapter = mAdapter
             it.layoutManager = GridLayoutManager(it.context, 3)
         }
     }
+
+    private fun getNormalCatList(data: MutableList<CatModel>, context: Context): MutableList<Cat> {
+        val newList = ArrayList<Cat>()
+        data.forEach {
+            newList.add(Cat(context, it.seed))
+        }
+        return newList
+    }
 }
 
-private class CatAdapter(val context: Context) : RecyclerView.Adapter<CatHolder?>() {
+private class CatAdapter(val context: Context, var cats: MutableList<Cat>) : RecyclerView.Adapter<CatHolder?>() {
 
-    private var mCats: MutableList<Cat>
     private val size = context.resources.getDimensionPixelSize(R.dimen.neko_display_size)
 
-    init {
-        mCats = ArrayList<Cat>()
-    }
-
-    fun setCats(cats: MutableList<Cat>) {
-        mCats = cats
+    fun setNewCats(newCats: MutableList<Cat>) {
+        cats = newCats
         notifyDataSetChanged()
     }
 
@@ -51,12 +66,12 @@ private class CatAdapter(val context: Context) : RecyclerView.Adapter<CatHolder?
     }
 
     override fun onBindViewHolder(holder: CatHolder, position: Int) {
-        holder.imageView.setImageBitmap(mCats[position].createBitmap(size, size))
-        holder.textView.text = mCats[position].name
+        holder.imageView.setImageBitmap(cats[position].createBitmap(size, size))
+        holder.textView.text = cats[position].name
     }
 
     override fun getItemCount(): Int {
-        return mCats.size
+        return cats.size
     }
 }
 

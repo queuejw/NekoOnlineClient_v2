@@ -1,8 +1,10 @@
 package ru.neko.online.client.fragment.welcome
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -51,6 +53,9 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
         }
         resetButton?.setOnClickListener {
             context?.let {
+                val imm =
+                    activity?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+                imm?.hideSoftInputFromWindow(view?.windowToken, 0)
                 if (prefs?.clearServerConfig() == true) {
                     showDialog(it)
                 } else {
@@ -75,6 +80,9 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
             prefs?.serverPort = port.toInt()
         }
         context?.let {
+            val imm =
+                activity?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm?.hideSoftInputFromWindow(view?.windowToken, 0)
             if (successful) {
                 showDialog(it)
             } else {

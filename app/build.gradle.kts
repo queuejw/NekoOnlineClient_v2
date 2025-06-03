@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.androidx.viewpager2)
 
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

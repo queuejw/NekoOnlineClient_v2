@@ -83,4 +83,21 @@ class AccountPrefs(context: Context) {
         return true
     }
 
+    fun insertCat(data: String) {
+        val num = accountPrefs.all.size + 1
+        accountCatsPrefs.edit {
+            putString("cat:$num", data)
+        }
+    }
+    fun getAllCats(): MutableList<String> {
+        val list = ArrayList<String>()
+        accountCatsPrefs.all.forEach {
+            list.add(it.value as String)
+        }
+        return list
+    }
+    fun clearCats() {
+        accountCatsPrefs.edit { clear() }
+    }
+
 }

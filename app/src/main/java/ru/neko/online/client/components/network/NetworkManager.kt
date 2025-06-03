@@ -17,6 +17,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.json.JSONArray
 import org.json.JSONObject
 import ru.neko.online.client.components.AccountPrefs
 import java.net.SocketException
@@ -24,10 +25,10 @@ import java.net.SocketTimeoutException
 
 class NetworkManager(context: Context) {
 
-    private val accountPrefs: AccountPrefs = AccountPrefs(context)
+    private var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
-    private val port: Int = accountPrefs.serverPort
-    private val server: String? = accountPrefs.serverAddress
+    private val port: Int? = accountPrefs?.serverPort
+    private val server: String? = accountPrefs?.serverAddress
 
     private val ktorClient: HttpClient = createClient()
 
@@ -48,9 +49,10 @@ class NetworkManager(context: Context) {
 
     fun closeClient() {
         ktorClient.close()
+        accountPrefs = null
     }
 
-    suspend fun networkPost(path: String, body: Any): Pair<JSONObject?, Int> {
+    suspend fun networkPost(path: String, body: Any): Pair<Any?, Int> {
         try {
             val response = ktorClient.post("http://$server:$port/$path") {
                 contentType(ContentType.Application.Json)
@@ -61,10 +63,13 @@ class NetworkManager(context: Context) {
             if (status != HttpStatusCode.OK.value) {
                 return Pair(null, status)
             }
-            val text = response.bodyAsText()
-            val jsonObject = JSONObject(text)
 
-            return Pair(jsonObject, status)
+            val text = response.bodyAsText()
+
+            when (path) {
+                "cats" -> return Pair(JSONArray(text), status)
+                else -> return Pair(JSONObject(text), status)
+            }
 
         } catch (e: SocketException) {
             Log.e("Network", e.stackTraceToString())

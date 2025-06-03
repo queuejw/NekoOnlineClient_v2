@@ -15,6 +15,7 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
@@ -81,7 +82,7 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                     network.networkPost("register", RegUser(it.accountName!!, it.accountUsername!!, it.accountPassword!!))
 
                 val status = result.second
-                val jsonObj = result.first
+                val jsonObj: JSONObject? = result.first as JSONObject?
 
                 withContext(Dispatchers.Main) {
                     network.closeClient()

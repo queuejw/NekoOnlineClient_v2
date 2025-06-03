@@ -8,41 +8,41 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.models.UserprefsModel
+import ru.neko.online.client.components.viewmodels.MainViewModel
 
 class UserFragment : Fragment(R.layout.user_fragment) {
 
     private var recyclerView: RecyclerView? = null
     private var mAdapter: UserprefsAdapter? = null
 
+    private val viewModel: MainViewModel by activityViewModels()
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById<RecyclerView>(R.id.userprefs_recyclerview)
         context?.let {
-            val data = createData(it)
-            mAdapter = UserprefsAdapter(data, it)
+            val userprefsData = viewModel.userprefsLiveData
+            userprefsData.value?.let { data ->
+                mAdapter = UserprefsAdapter(data, it)
+            }
+            userprefsData.observe(viewLifecycleOwner) {
+                mAdapter?.updateData(it)
+            }
             val lm = LinearLayoutManager(it)
             recyclerView?.apply {
                 adapter = mAdapter
                 layoutManager = lm
             }
         }
-    }
-
-    private fun createData(context: Context): MutableList<UserprefsModel> {
-        val data = ArrayList<UserprefsModel>()
-        var accountPrefs: AccountPrefs? = AccountPrefs(context)
-        data.add(UserprefsModel("NCoins", accountPrefs!!.userDataNCoins, R.drawable.ic_error))
-        data.add(UserprefsModel("Еда", accountPrefs.userDataFood, R.drawable.ic_foodbowl_filled))
-        data.add(UserprefsModel("Вода", accountPrefs.userDataWater, R.drawable.ic_water_filled))
-        data.add(UserprefsModel("Игрушки", accountPrefs.userDataToys, R.drawable.ic_toy_mouse))
-        return data
     }
 }
 
@@ -55,8 +55,10 @@ class UserprefsAdapter(var data: MutableList<UserprefsModel>, val context: Conte
     }
 
     fun updateData(newData: MutableList<UserprefsModel>) {
+        val diffCallback = UserprefsDiff(data, newData)
+        val result = DiffUtil.calculateDiff(diffCallback)
         data = newData
-        notifyDataSetChanged()
+        result.dispatchUpdatesTo(this)
     }
 
     override fun onBindViewHolder(
@@ -78,4 +80,29 @@ class UserprefsAdapter(var data: MutableList<UserprefsModel>, val context: Conte
 class UserprefsHolder(view: View): RecyclerView.ViewHolder(view) {
     val imageView: ImageView = view.findViewById<ImageView>(android.R.id.icon)
     val textView: MaterialTextView = view.findViewById<MaterialTextView>(android.R.id.text1)
+}
+
+class UserprefsDiff(val old: MutableList<UserprefsModel>, val new: MutableList<UserprefsModel>): DiffUtil.Callback() {
+
+    override fun getOldListSize(): Int {
+        return old.size
+    }
+
+    override fun getNewListSize(): Int {
+        return new.size
+    }
+
+    override fun areItemsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int
+    ): Boolean {
+        return old[oldItemPosition] == new[newItemPosition]
+    }
+
+    override fun areContentsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int
+    ): Boolean {
+        return old[oldItemPosition].amount == new[newItemPosition].amount
+    }
 }

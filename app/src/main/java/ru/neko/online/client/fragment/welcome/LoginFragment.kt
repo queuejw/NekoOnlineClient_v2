@@ -1,11 +1,13 @@
 package ru.neko.online.client.fragment.welcome
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -17,13 +19,15 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import ru.neko.online.client.R
 import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
-import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.models.network.LoginUser
+import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.config.Prefs
+
 
 class LoginFragment : Fragment(R.layout.login_fragment) {
 
@@ -72,7 +76,32 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
             ) {
                 usernameEditText?.let {
                     loginButton?.isEnabled =
-                        (p0?.isEmpty() == false) && usernameEditText!!.text?.isNotEmpty() == true
+                        (p0?.isEmpty() == false) && it.text?.isNotEmpty() == true
+                }
+            }
+
+        })
+        usernameEditText?.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {
+            }
+
+            override fun beforeTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                p0: CharSequence?,
+                p1: Int,
+                p2: Int,
+                p3: Int
+            ) {
+                passwordEditText?.let {
+                    loginButton?.isEnabled =
+                        (p0?.isEmpty() == false) && it.text?.isNotEmpty() == true
                 }
             }
 
@@ -91,6 +120,10 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
 
             val dialog = createLoadingDialog(context)
 
+            val imm =
+                activity?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+            imm?.hideSoftInputFromWindow(view?.windowToken, 0)
+
             dialog.show()
 
             val username = usernameEditText!!.text.toString()
@@ -101,7 +134,7 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                     val result = network.networkPost("login", LoginUser(username, password))
 
                     val status = result.second
-                    val jsonObj = result.first
+                    val jsonObj: JSONObject? = result.first as JSONObject?
 
                     withContext(Dispatchers.Main) {
                         network.closeClient()
@@ -142,7 +175,10 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                             appPrefs = null
                             withContext(Dispatchers.Main) {
                                 dialog.dismiss()
-                                showErrorDialog(context, getString(R.string.dialog_unexpected_error))
+                                showErrorDialog(
+                                    context,
+                                    getString(R.string.dialog_unexpected_error)
+                                )
                             }
                         } else {
                             appPrefs?.apply {

@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.net.toUri
@@ -30,12 +31,16 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
+import ru.neko.online.client.components.models.CatModel
+import ru.neko.online.client.components.models.UserprefsModel
 import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.models.network.TokenUser
 import ru.neko.online.client.components.utils.BottomSheet
+import ru.neko.online.client.components.viewmodels.MainViewModel
 import ru.neko.online.client.config.Prefs
 import ru.neko.online.client.fragment.game.CatControlsFragment
 import ru.neko.online.client.fragment.game.HomeFragment
@@ -59,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 
     private var prefs: Prefs? = null
 
+    private val model: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,8 +75,6 @@ class MainActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.main_activity)
         viewPager = findViewById<ViewPager2>(R.id.viewpager)
-        pagerAdapter = NekoMainAdapter(this)
-        infoBottomSheet = BottomSheet(this)
         bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         linearLayout = findViewById<LinearLayoutCompat>(R.id.main_linear_layout)
         syncIndicator = findViewById<LinearLayoutCompat>(R.id.sync_indicator)
@@ -78,7 +82,30 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(materialToolbar)
 
+        prepareModel(this)
+        infoBottomSheet = BottomSheet(this)
+        pagerAdapter = NekoMainAdapter(this)
         configureUi()
+    }
+
+    private fun prepareModel(context: Context) {
+        val data = ArrayList<UserprefsModel>()
+        var accountPrefs: AccountPrefs? = AccountPrefs(context)
+        data.add(UserprefsModel("NCoins", accountPrefs!!.userDataNCoins, R.drawable.ic_error))
+        data.add(UserprefsModel("Еда", accountPrefs.userDataFood, R.drawable.ic_foodbowl_filled))
+        data.add(UserprefsModel("Вода", accountPrefs.userDataWater, R.drawable.ic_water_filled))
+        data.add(UserprefsModel("Игрушки", accountPrefs.userDataToys, R.drawable.ic_toy_mouse))
+
+        model.setUserprefsLiveData(data)
+
+        val catData = ArrayList<CatModel>()
+        val cats = accountPrefs.getAllCats()
+        accountPrefs = null
+        cats.forEach {
+            val jsonObj = JSONObject(it)
+            catData.add(CatModel(jsonObj.getLong("id"), jsonObj.getString("name"), jsonObj.getLong("seed")))
+        }
+        model.setCatsLiveData(catData)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -112,11 +139,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
         lifecycleScope.launch {
-            val results = syncUserData(this@MainActivity)
-            val connectionBool = results.second
+            val resultsUserprefs = syncUserData(this@MainActivity)
+            val connectionBool = resultsUserprefs.second
             if (!connectionBool) {
                 withContext(Dispatchers.Main) {
-                    viewPager?.animate()?.alpha(0.5f)?.setDuration(200)?.start()
                     createSnackbar()
                     editSnackbarText(getString(R.string.snackbar_connection_error, 5))
                     showSnackbar()
@@ -133,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                 prepareClient(attempt + 1)
                 cancel()
             }
-            val dataStatus = results.first
+            val dataStatus = resultsUserprefs.first
             if (!dataStatus && connectionBool) {
                 Log.d("Main", "Ошибка при получении данных")
                 withContext(Dispatchers.Main) {
@@ -141,11 +167,9 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
                 }
             }
-            if(dataStatus && connectionBool) {
-                viewPager?.let {
-                    if(it.alpha != 1f) it.animate().alpha(1f).setDuration(200).start()
-                }
-            }
+        }
+        lifecycleScope.launch {
+            val resultsCats = syncUserCats(this@MainActivity)
         }
     }
 
@@ -207,7 +231,7 @@ class MainActivity : AppCompatActivity() {
         val network = NetworkManager(context)
         val result = network.networkPost("userprefs", TokenUser(token))
 
-        val jsonObj: JSONObject? = result.first
+        val jsonObj: JSONObject? = result.first as JSONObject?
         val status: Int = result.second
 
         withContext(Dispatchers.Main) {
@@ -233,9 +257,68 @@ class MainActivity : AppCompatActivity() {
             }
 
             accountPrefs = null
+            model.setUserprefsLiveData(createUserprefsData(jsonObj.getInt("ncoins"), jsonObj.getInt("food"), jsonObj.getInt("water"), jsonObj.getInt("toys")))
 
             return Pair(true, true)
         }
+    }
+
+    // first - data status
+    // second - connection status
+    private suspend fun syncUserCats(context: Context): Pair<Boolean, Boolean> {
+        Log.d("Network", "Sync data")
+        var accountPrefs: AccountPrefs? = AccountPrefs(context)
+
+        val token = accountPrefs?.userToken
+
+        if (token == null) {
+            return Pair(false, false)
+        }
+        withContext(Dispatchers.Main) {
+            animateSyncIndicator(false)
+        }
+        val network = NetworkManager(context)
+        val result = network.networkPost("cats", TokenUser(token))
+
+        val jsonArray: JSONArray? = result.first as JSONArray?
+        val status: Int = result.second
+
+        withContext(Dispatchers.Main) {
+            network.closeClient()
+            animateSyncIndicator(true)
+        }
+        if (status == HttpStatusCode.ServiceUnavailable.value) {
+            return Pair(false, false)
+        }
+
+        if (jsonArray == null) {
+            accountPrefs = null
+            return Pair(false, true)
+
+        } else {
+
+            val catData = ArrayList<CatModel>()
+            accountPrefs.clearCats()
+            jsonArray.toJSONObject(jsonArray).keys().forEach {
+                accountPrefs.insertCat(it)
+                val jsonObj = JSONObject(it)
+                catData.add(CatModel(jsonObj.getLong("id"), jsonObj.getString("name"), jsonObj.getLong("seed")))
+            }
+            model.setCatsLiveData(catData)
+
+            accountPrefs = null
+
+            return Pair(true, true)
+        }
+    }
+
+    private fun createUserprefsData(ncoins: Int, food: Int, water: Int, toys: Int): MutableList<UserprefsModel> {
+        val data = ArrayList<UserprefsModel>()
+        data.add(UserprefsModel("NCoins", ncoins, R.drawable.ic_error))
+        data.add(UserprefsModel("Еда", food, R.drawable.ic_foodbowl_filled))
+        data.add(UserprefsModel("Вода", water, R.drawable.ic_water_filled))
+        data.add(UserprefsModel("Игрушки", toys, R.drawable.ic_toy_mouse))
+        return data
     }
 
     private fun configureUi() {
