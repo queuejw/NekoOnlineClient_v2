@@ -1,4 +1,4 @@
-package ru.neko.online.client.components.network.serializable
+package ru.neko.online.client.components.models.network
 
 import kotlinx.serialization.Serializable
 

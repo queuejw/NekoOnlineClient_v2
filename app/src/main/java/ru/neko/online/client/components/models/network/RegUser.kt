@@ -1,9 +1,10 @@
-package ru.neko.online.client.components.network.serializable
+package ru.neko.online.client.components.models.network
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginUser(
+data class RegUser(
+    val name: String,
     val username: String,
     val password: String
 )

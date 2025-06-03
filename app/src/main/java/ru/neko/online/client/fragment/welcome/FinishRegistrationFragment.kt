@@ -20,7 +20,7 @@ import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
-import ru.neko.online.client.components.network.serializable.RegUser
+import ru.neko.online.client.components.models.network.RegUser
 import ru.neko.online.client.config.Prefs
 
 class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragment) {

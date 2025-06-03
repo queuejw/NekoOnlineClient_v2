@@ -30,10 +30,11 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
-import ru.neko.online.client.components.network.serializable.TokenUser
+import ru.neko.online.client.components.models.network.TokenUser
 import ru.neko.online.client.components.utils.BottomSheet
 import ru.neko.online.client.config.Prefs
 import ru.neko.online.client.fragment.game.CatControlsFragment
@@ -111,10 +112,11 @@ class MainActivity : AppCompatActivity() {
             return
         }
         lifecycleScope.launch {
-            val results = getUserData(this@MainActivity)
+            val results = syncUserData(this@MainActivity)
             val connectionBool = results.second
             if (!connectionBool) {
                 withContext(Dispatchers.Main) {
+                    viewPager?.animate()?.alpha(0.5f)?.setDuration(200)?.start()
                     createSnackbar()
                     editSnackbarText(getString(R.string.snackbar_connection_error, 5))
                     showSnackbar()
@@ -135,7 +137,13 @@ class MainActivity : AppCompatActivity() {
             if (!dataStatus && connectionBool) {
                 Log.d("Main", "Ошибка при получении данных")
                 withContext(Dispatchers.Main) {
+                    viewPager?.animate()?.alpha(0.5f)?.setDuration(200)?.start()
                     Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
+                }
+            }
+            if(dataStatus && connectionBool) {
+                viewPager?.let {
+                    if(it.alpha != 1f) it.animate().alpha(1f).setDuration(200).start()
                 }
             }
         }
@@ -184,7 +192,8 @@ class MainActivity : AppCompatActivity() {
 
     // first - data status
     // second - connection status
-    private suspend fun getUserData(context: Context): Pair<Boolean, Boolean> {
+    private suspend fun syncUserData(context: Context): Pair<Boolean, Boolean> {
+        Log.d("Network", "Sync data")
         var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
         val token = accountPrefs?.userToken
@@ -198,8 +207,8 @@ class MainActivity : AppCompatActivity() {
         val network = NetworkManager(context)
         val result = network.networkPost("userprefs", TokenUser(token))
 
-        val jsonObj = result.first
-        val status = result.second
+        val jsonObj: JSONObject? = result.first
+        val status: Int = result.second
 
         withContext(Dispatchers.Main) {
             network.closeClient()
@@ -215,11 +224,13 @@ class MainActivity : AppCompatActivity() {
 
         } else {
 
-            jsonObj.getString("name")
-            jsonObj.getInt("ncoins")
-            jsonObj.getInt("food")
-            jsonObj.getInt("water")
-            jsonObj.getInt("toys")
+            accountPrefs.apply {
+                userDataName = jsonObj.getString("name")
+                userDataNCoins = jsonObj.getInt("ncoins")
+                userDataFood = jsonObj.getInt("food")
+                userDataWater = jsonObj.getInt("water")
+                userDataToys = jsonObj.getInt("toys")
+            }
 
             accountPrefs = null
 
@@ -297,21 +308,25 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    private fun showExitDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.dialog_warning_title))
+            .setIcon(R.drawable.ic_login)
+            .setMessage(getString(R.string.dialog_logout_message))
+            .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                exit(this)
+            }
+            .setNegativeButton(
+                getString(R.string.no), null
+            )
+            .setCancelable(false)
+            .show()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.exit_menu -> {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(getString(R.string.dialog_warning_title))
-                    .setIcon(R.drawable.ic_login)
-                    .setMessage(getString(R.string.dialog_logout_message))
-                    .setPositiveButton(getString(R.string.yes)) { _, _ ->
-                        exit(this)
-                    }
-                    .setNegativeButton(
-                        getString(R.string.no), null
-                    )
-                    .setCancelable(false)
-                    .show()
+                showExitDialog()
                 return true
             }
 

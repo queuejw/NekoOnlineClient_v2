@@ -6,8 +6,10 @@ import androidx.core.content.edit
 class AccountPrefs(context: Context) {
 
     private val prefsName: String = "account_prefs"
+    private val catsPrefsName: String = "account_cats_prefs"
 
     private val accountPrefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+    private val accountCatsPrefs = context.getSharedPreferences(catsPrefsName, Context.MODE_PRIVATE)
 
     var accountPassword
         get() = accountPrefs.getString("account_password", "null")
@@ -37,6 +39,27 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getInt("server_port", 1011)
         set(value) = accountPrefs.edit { putInt("server_port", value) }
 
+    var userDataName
+        get() = accountPrefs.getString("userdata_name", "null")
+        set(value) = accountPrefs.edit { putString("userdata_name", value) }
+
+    var userDataNCoins
+        get() = accountPrefs.getInt("userdata_ncoins", 0)
+        set(value) = accountPrefs.edit { putInt("userdata_ncoins", value) }
+
+    var userDataFood
+        get() = accountPrefs.getInt("userdata_food", 0)
+        set(value) = accountPrefs.edit { putInt("userdata_food", value) }
+
+    var userDataWater
+        get() = accountPrefs.getInt("userdata_water", 0)
+        set(value) = accountPrefs.edit { putInt("userdata_water", value) }
+
+    var userDataToys
+        get() = accountPrefs.getInt("userdata_toys", 0)
+        set(value) = accountPrefs.edit { putInt("userdata_toys", value) }
+
+
     fun clearServerConfig(): Boolean {
         accountPrefs.edit {
             remove("server_port")
@@ -51,6 +74,11 @@ class AccountPrefs(context: Context) {
             remove("user_id")
             remove("account_password")
             remove("account_name")
+            remove("userdata_name")
+            remove("userdata_ncoins")
+            remove("userdata_food")
+            remove("userdata_water")
+            remove("userdata_toys")
         }
         return true
     }
