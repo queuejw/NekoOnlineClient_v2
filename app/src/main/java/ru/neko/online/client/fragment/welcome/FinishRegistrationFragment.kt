@@ -41,7 +41,7 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
         finishRegButton = view.findViewById<MaterialButton>(R.id.finish_reg_button)
         nicknameTextView = view.findViewById<MaterialTextView>(R.id.registration_username_text)
 
-        (activity as WelcomeActivity?)?.setToolbarTitle("Финиш!")
+        (activity as WelcomeActivity?)?.setToolbarTitle(getString(R.string.register_activity_title_3))
 
         setUi()
     }
@@ -92,17 +92,17 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                         when (status) {
                             HttpStatusCode.ServiceUnavailable.value -> showErrorDialog(
                                 context,
-                                "Нам не удалось подключиться к серверу. Проверьте подключение к интернету или попробуйте позже."
+                                getString(R.string.dialog_connection_error)
                             )
 
                             HttpStatusCode.Conflict.value -> showErrorDialog(
                                 context,
-                                "Аккаунт с таким никнеймом уже существует. Попробуйте ввести другой никнейм."
+                                getString(R.string.dialog_reg_account_error)
                             )
 
                             else -> showErrorDialog(
                                 context,
-                                "Нам не получилось создать аккаунт. Попробуйте ещё раз. Если не получается, попробуйте создать аккаунт позже или обратитесь к нам."
+                                getString(R.string.dialog_reg_error)
                             )
                         }
                         finishRegButton?.isEnabled = true
@@ -131,7 +131,7 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
 
                             else -> showErrorDialog(
                                 context,
-                                "Нам не получилось создать аккаунт. Попробуйте ещё раз. Если не получается, попробуйте создать аккаунт позже или обратитесь к нам."
+                                getString(R.string.dialog_reg_error)
                             )
                         }
                     }
@@ -142,10 +142,10 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
 
     private fun showSuccessDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Добро пожаловать!")
+            .setTitle(getString(R.string.dialog_successful_reg_title))
             .setIcon(R.drawable.ic_fullcat_icon)
-            .setMessage("Аккаунт успешно создан.\nДавайте начнём игру!")
-            .setPositiveButton("Начать") { _, _ ->
+            .setMessage(getString(R.string.dialog_successful_reg_message))
+            .setPositiveButton(getString(R.string.dialog_successful_reg_continue_btn)) { _, _ ->
                 val intent = Intent(
                     context,
                     MainActivity::class.java
@@ -158,14 +158,18 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
             .show()
     }
 
+    private fun openTg() {
+        startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
+    }
+
     private fun showErrorDialog(context: Context, errorMessage: String) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Ой!")
+            .setTitle(getString(R.string.error_dialog_title))
             .setIcon(R.drawable.ic_error)
             .setMessage(errorMessage)
             .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton("Поддержка") { _, _ ->
-                startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
+            .setNegativeButton(getString(R.string.dialog_support_btn)) { _, _ ->
+                openTg()
             }
             .setCancelable(false)
             .show()

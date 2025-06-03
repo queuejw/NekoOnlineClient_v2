@@ -27,7 +27,7 @@
             android:textSize="18sp"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Подождите ..."/>
+            android:text="@string/loading_indicator_text"/>
 
 
     </androidx.appcompat.widget.LinearLayoutCompat>

@@ -39,7 +39,7 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
         loginButton = view.findViewById<MaterialButton>(R.id.login_button)
         usernameEditText = view.findViewById<TextInputEditText>(R.id.username_edit_text)
         passwordEditText = view.findViewById<TextInputEditText>(R.id.password_edit_text)
-        (activity as WelcomeActivity?)?.setToolbarTitle("Вход")
+        (activity as WelcomeActivity?)?.setToolbarTitle(getString(R.string.login_activity_title))
         setUi()
     }
 
@@ -113,17 +113,17 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                             when (status) {
                                 HttpStatusCode.ServiceUnavailable.value -> showErrorDialog(
                                     context,
-                                    "Нам не удалось подключиться к серверу. Проверьте подключение к интернету или попробуйте позже."
+                                    getString(R.string.dialog_connection_error)
                                 )
 
                                 HttpStatusCode.Unauthorized.value -> showErrorDialog(
                                     context,
-                                    "Не удалось войти в аккаунт. Проверьте логин или пароль."
+                                    getString(R.string.dialog_account_error)
                                 )
 
                                 else -> showErrorDialog(
                                     context,
-                                    "Что-то пошло не так при попытке входа в Ваш аккаунт. Попробуйте ещё раз."
+                                    getString(R.string.dialog_other_error)
                                 )
                             }
                         }
@@ -142,7 +142,7 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                             appPrefs = null
                             withContext(Dispatchers.Main) {
                                 dialog.dismiss()
-                                showErrorDialog(context, "Не удалось войти в ваш аккаунт из-за неизвестной ошибки. Попробуйте ещё раз. Если всё ещё не получается, обратитесь в поддержку.")
+                                showErrorDialog(context, getString(R.string.dialog_unexpected_error))
                             }
                         } else {
                             appPrefs?.apply {
@@ -173,11 +173,11 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
 
     private fun showErrorDialog(context: Context, errorMessage: String) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Ой!")
+            .setTitle(getString(R.string.error_dialog_title))
             .setIcon(R.drawable.ic_error)
             .setMessage(errorMessage)
             .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton("Поддержка") { _, _ ->
+            .setNegativeButton(getString(R.string.dialog_support_btn)) { _, _ ->
                 startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
             }
             .setCancelable(false)

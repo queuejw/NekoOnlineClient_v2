@@ -36,7 +36,7 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
         passwordInputLayout = view.findViewById<TextInputLayout>(R.id.password_text_input_layout_1)
         passwordInputLayout2 = view.findViewById<TextInputLayout>(R.id.password_text_input_layout_2)
 
-        (activity as WelcomeActivity?)?.setToolbarTitle("Безопасность - это важно")
+        (activity as WelcomeActivity?)?.setToolbarTitle(getString(R.string.register_activity_title_2))
         setUi()
     }
 
@@ -46,7 +46,7 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
             if (editText1!!.text != null) {
                 val text = editText1!!.text.toString()
                 if (text.length > 25) {
-                    passwordInputLayout!!.error = "Слишком длинный пароль"
+                    passwordInputLayout!!.error = getString(R.string.password_error)
                     nextButton?.isEnabled = false
                     isBlocked = true
                 } else {
@@ -57,7 +57,7 @@ class CreatePasswordFragment : Fragment(R.layout.create_password_fragment) {
             if (editText2!!.text != null) {
                 val text = editText2!!.text.toString()
                 if (text.length > 25) {
-                    passwordInputLayout2!!.error = "Слишком длинный пароль"
+                    passwordInputLayout2!!.error = getString(R.string.password_error)
                     nextButton?.isEnabled = false
                     isBlocked = true
                 } else {

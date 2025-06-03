@@ -8,6 +8,10 @@ android {
     namespace = "ru.neko.online.client"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "ru.neko.online.client"
         minSdk = 23
@@ -57,5 +61,8 @@ dependencies {
     //ktor logging
     implementation(libs.slf4j.simple)
     implementation(libs.ktor.client.logging)
+
+    //leakCanary
+    debugImplementation(libs.leakcanary.android)
 
 }

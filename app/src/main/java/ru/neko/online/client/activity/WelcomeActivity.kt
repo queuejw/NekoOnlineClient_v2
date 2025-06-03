@@ -1,10 +1,8 @@
 package ru.neko.online.client.activity
 
-import android.content.Context
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -15,9 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commit
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import ru.neko.online.client.R
+import ru.neko.online.client.components.utils.BottomSheet
 import ru.neko.online.client.fragment.welcome.CreatePasswordFragment
 import ru.neko.online.client.fragment.welcome.CreateUserNameFragment
 import ru.neko.online.client.fragment.welcome.FinishRegistrationFragment
@@ -31,10 +28,13 @@ class WelcomeActivity : AppCompatActivity() {
 
     private var toolbar: MaterialToolbar? = null
 
+    private var infoBottomSheet: BottomSheet? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(R.layout.welcome_activity)
+        infoBottomSheet = BottomSheet(this)
         fragmentContainer = findViewById<FragmentContainerView>(R.id.fragment_container)
         toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setUi()
@@ -60,27 +60,16 @@ class WelcomeActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-
-    private fun createBottomSheet(layoutId: Int, context: Context) {
-        val bottomSheet = BottomSheetDialog(context)
-        bottomSheet.setContentView(layoutId)
-        bottomSheet.dismissWithAnimation = true
-        val view =
-            bottomSheet.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-        val bottomSheetBehavior = BottomSheetBehavior.from(view!!)
-        bottomSheetBehavior.setPeekHeight(BottomSheetBehavior.PEEK_HEIGHT_AUTO, true)
-        bottomSheet.show()
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+
             R.id.help_menu -> {
-                createBottomSheet(R.layout.help_bottomsheet, this)
+                infoBottomSheet?.getInfoBottomSheet(R.layout.help_bottomsheet)?.show()
                 return true
             }
 
             R.id.about_menu -> {
-                createBottomSheet(R.layout.about_bottomsheet, this)
+                infoBottomSheet?.getInfoBottomSheet(R.layout.about_bottomsheet)?.show()
                 return true
             }
 
@@ -119,5 +108,10 @@ class WelcomeActivity : AppCompatActivity() {
                 it.animate().alpha(1f).translationX(0f).setDuration(150).start()
             }.start()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        infoBottomSheet = null
     }
 }

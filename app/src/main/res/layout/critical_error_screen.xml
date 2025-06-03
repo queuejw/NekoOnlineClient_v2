@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/critical_error"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:textSize="24sp" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_fullcat_icon"/>
+
+        <ImageView
+            android:layout_width="42dp"
+            android:layout_marginStart="24dp"
+            android:layout_height="42dp"
+            android:src="@drawable/ic_flash_off"/>
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_marginStart="24dp"
+            android:layout_height="64dp"
+            android:alpha="0.5"
+            android:src="@drawable/ic_public"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/critical_error_message"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:textSize="16sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/critical_error_send_data_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:text="@string/critical_error_send_data_button_text"
+        app:icon="@drawable/ic_share" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/critical_error_restart_game_button"
+        style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:text="@string/critical_error_restart_game_button_text"
+        app:icon="@drawable/ic_undo" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/critical_error_tg_button"
+        style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:text="@string/critical_error_tg_text"
+        app:icon="@drawable/ic_arrow_forward" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/error_details_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="24dp"
+        android:alpha="0.1" />
+
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

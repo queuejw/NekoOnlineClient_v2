@@ -34,6 +34,7 @@ import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.network.serializable.TokenUser
+import ru.neko.online.client.components.utils.BottomSheet
 import ru.neko.online.client.config.Prefs
 import ru.neko.online.client.fragment.game.CatControlsFragment
 import ru.neko.online.client.fragment.game.HomeFragment
@@ -53,6 +54,8 @@ class MainActivity : AppCompatActivity() {
 
     private var bottomNavigation: BottomNavigationView? = null
 
+    private var infoBottomSheet: BottomSheet? = null
+
     private var prefs: Prefs? = null
 
 
@@ -66,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         viewPager = findViewById<ViewPager2>(R.id.viewpager)
         pagerAdapter = NekoMainAdapter(this)
+        infoBottomSheet = BottomSheet(this)
         bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         linearLayout = findViewById<LinearLayoutCompat>(R.id.main_linear_layout)
         syncIndicator = findViewById<LinearLayoutCompat>(R.id.sync_indicator)
@@ -112,13 +116,13 @@ class MainActivity : AppCompatActivity() {
             if (!connectionBool) {
                 withContext(Dispatchers.Main) {
                     createSnackbar()
-                    editSnackbarText("Не удалось подключиться к серверу. Попробуем cнова через 5 секунд")
+                    editSnackbarText(getString(R.string.snackbar_connection_error, 5))
                     showSnackbar()
                 }
                 for (i in 5 downTo 0) {
                     delay(1000)
                     withContext(Dispatchers.Main) {
-                        editSnackbarText("Не удалось подключиться к серверу. Попробуем cнова через $i секунд")
+                        editSnackbarText(getString(R.string.snackbar_connection_error, i))
                     }
                 }
                 withContext(Dispatchers.Main) {
@@ -139,11 +143,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun showOfflineDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Ой!")
+            .setTitle(getString(R.string.error_dialog_title))
             .setIcon(R.drawable.ic_cloud_off)
-            .setMessage("Не удалось установить связь с сервером. Проверьте подключение к интернету.")
+            .setMessage(getString(R.string.main_dialog_connection_error))
             .setPositiveButton(android.R.string.ok, null)
-            .setNegativeButton("Поддержка") { _, _ ->
+            .setNegativeButton(getString(R.string.dialog_support_btn)) { _, _ ->
                 startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
             }
             .setCancelable(false)
@@ -175,7 +179,7 @@ class MainActivity : AppCompatActivity() {
         syncIndicator!!.animate().translationY(if (hideIndicator) -200f else 0f)
             .alpha(if (hideIndicator) 0f else 1f).setDuration(200).withEndAction {
                 if (hideIndicator) syncIndicator!!.visibility = View.GONE
-            }
+            }.start()
     }
 
     // first - data status
@@ -204,17 +208,18 @@ class MainActivity : AppCompatActivity() {
         if (status == HttpStatusCode.ServiceUnavailable.value) {
             return Pair(false, false)
         }
+
         if (jsonObj == null) {
             accountPrefs = null
             return Pair(false, true)
 
         } else {
 
-            val name = jsonObj.getString("name")
-            val ncoins = jsonObj.getInt("ncoins")
-            val food = jsonObj.getInt("food")
-            val water = jsonObj.getInt("water")
-            val toys = jsonObj.getInt("toys")
+            jsonObj.getString("name")
+            jsonObj.getInt("ncoins")
+            jsonObj.getInt("food")
+            jsonObj.getInt("water")
+            jsonObj.getInt("toys")
 
             accountPrefs = null
 
@@ -296,19 +301,31 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.exit_menu -> {
                 MaterialAlertDialogBuilder(this)
-                    .setTitle("Внимание!")
+                    .setTitle(getString(R.string.dialog_warning_title))
                     .setIcon(R.drawable.ic_login)
-                    .setMessage("Вы точно хотите выйти из этого аккаунта?")
-                    .setPositiveButton("Да") { _, _ ->
+                    .setMessage(getString(R.string.dialog_logout_message))
+                    .setPositiveButton(getString(R.string.yes)) { _, _ ->
                         exit(this)
                     }
-                    .setNegativeButton("Нет", null)
+                    .setNegativeButton(
+                        getString(R.string.no), null
+                    )
                     .setCancelable(false)
                     .show()
                 return true
             }
 
+            R.id.settings_menu -> {
+                return true
+            }
+
+            R.id.help_menu -> {
+                infoBottomSheet?.getInfoBottomSheet(R.layout.help_bottomsheet)?.show()
+                return true
+            }
+
             R.id.about_menu -> {
+                infoBottomSheet?.getInfoBottomSheet(R.layout.about_bottomsheet)?.show()
                 return true
             }
 
@@ -319,6 +336,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         connectionSnackbar = null
         prefs = null
+        infoBottomSheet = null
         super.onDestroy()
     }
 }

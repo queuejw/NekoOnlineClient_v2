@@ -27,7 +27,7 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
         context?.let {
             prefs = AccountPrefs(it)
         }
-        (activity as WelcomeActivity?)?.setToolbarTitle("Конфигурация сервера")
+        (activity as WelcomeActivity?)?.setToolbarTitle(getString(R.string.server_config_activity_title))
         serverEditText = view.findViewById<TextInputEditText>(R.id.server_edit_text)
         portEditText = view.findViewById<TextInputEditText>(R.id.port_edit_text)
         saveButton = view.findViewById<MaterialButton>(R.id.save_server_config_button)
@@ -89,9 +89,9 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
 
     private fun showDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Успешно")
+            .setTitle(getString(R.string.dialog_success_title))
             .setIcon(R.drawable.ic_check)
-            .setMessage("Конфигурация сервера была изменена.")
+            .setMessage(getString(R.string.server_config_dialog_success))
             .setCancelable(false)
             .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
                 closeSettings()
@@ -101,9 +101,9 @@ class ServerConfigurationFragment : Fragment(R.layout.server_configuration_fragm
 
     private fun showErrorDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
-            .setTitle("Ой")
+            .setTitle(getString(R.string.error_dialog_title))
             .setIcon(R.drawable.ic_check)
-            .setMessage("Не получилось сохранить изменения. Проверьте конфигурацию сервера.")
+            .setMessage(getString(R.string.server_config_dialog_error))
             .setPositiveButton(getString(android.R.string.ok), null)
             .show()
     }

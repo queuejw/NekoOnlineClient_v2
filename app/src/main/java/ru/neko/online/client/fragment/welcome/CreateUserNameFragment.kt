@@ -31,7 +31,7 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
         cancelButton = view.findViewById<MaterialButton>(R.id.cancel_button)
         nextButton = view.findViewById<MaterialButton>(R.id.next_button)
         usernameInputLayout = view.findViewById<TextInputLayout>(R.id.usernameInputLayout)
-        (activity as WelcomeActivity?)?.setToolbarTitle("Как тебя зовут?")
+        (activity as WelcomeActivity?)?.setToolbarTitle(getString(R.string.register_activity_title_1))
         setUi()
     }
 
@@ -58,7 +58,7 @@ class CreateUserNameFragment : Fragment(R.layout.create_user_name_fragment) {
                     if (editText!!.text != null) {
                         val username = editText!!.text.toString()
                         if (username.length > 25) {
-                            usernameInputLayout!!.error = "Слишком длинный никнейм"
+                            usernameInputLayout!!.error = getString(R.string.username_error)
                             nextButton?.isEnabled = false
                         } else {
                             nextButton?.isEnabled = true
