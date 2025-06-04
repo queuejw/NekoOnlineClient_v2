@@ -11,6 +11,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.textview.MaterialTextView
 import ru.neko.online.client.R
 import ru.neko.online.client.components.Cat
@@ -50,6 +52,10 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
         return newList
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+    }
+
     internal inner class CatAdapter(val context: Context, var cats: MutableList<Cat>) :
         RecyclerView.Adapter<CatHolder?>() {
 
@@ -67,10 +73,41 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
             )
         }
 
+        private fun createCatBottomSheet(position: Int): BottomSheetDialog {
+            val bottomSheet = BottomSheetDialog(context)
+            bottomSheet.setContentView(R.layout.cat_bottom_sheet)
+            bottomSheet.dismissWithAnimation = true
+            val view =
+                bottomSheet.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            val bottomSheetBehavior = BottomSheetBehavior.from(view!!)
+            bottomSheetBehavior.setPeekHeight(BottomSheetBehavior.PEEK_HEIGHT_AUTO, true)
+            prepareBottomSheetUi(position, view)
+
+            return bottomSheet
+        }
+
+        private fun showCatBottomSheet(position: Int) {
+            val dialog = createCatBottomSheet(position)
+            dialog.show()
+        }
+
+        private fun prepareBottomSheetUi(position: Int, view: View) {
+            val icon = view.findViewById<AppCompatImageView>(R.id.cat_icon)
+            icon.setImageBitmap(viewModel.getIconFromCache(cats[position].id!!.toInt()))
+
+            val label = view.findViewById<MaterialTextView>(R.id.cat_name)
+            label.text = cats[position].name
+
+        }
+
         override fun onBindViewHolder(holder: CatHolder, position: Int) {
             holder.apply {
                 imageView.setImageBitmap(viewModel.getIconFromCache(cats[position].id!!.toInt()))
                 textView.text = cats[position].name
+
+                itemView.setOnClickListener {
+                    showCatBottomSheet(position)
+                }
             }
         }
 

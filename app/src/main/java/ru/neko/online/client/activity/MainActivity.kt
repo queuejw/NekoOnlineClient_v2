@@ -342,11 +342,10 @@ class MainActivity : AppCompatActivity() {
             return Pair(false, true)
 
         } else {
-
             val catData = ArrayList<CatModel>()
             val diskCache = CacheUtils.initDiskCache(context)
             accountPrefs.clearCats()
-            val keys = jsonArray.toJSONObject(jsonArray).keys()
+            val keys: Iterator<String>? = jsonArray.toJSONObject(jsonArray).keys()
             if (keys != null) {
                 keys.forEach {
                     Log.d("JsonCats", it)
