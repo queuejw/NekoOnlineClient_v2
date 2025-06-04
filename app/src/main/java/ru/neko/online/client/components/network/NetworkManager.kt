@@ -16,6 +16,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.utils.io.ClosedByteChannelException
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 import org.json.JSONObject
@@ -75,6 +76,9 @@ class NetworkManager(context: Context) {
             Log.e("Network", e.stackTraceToString())
             return Pair(null, 503)
         } catch (e: SocketTimeoutException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, 503)
+        } catch (e: ClosedByteChannelException) {
             Log.e("Network", e.stackTraceToString())
             return Pair(null, 503)
         }

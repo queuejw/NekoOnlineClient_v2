@@ -1,6 +1,7 @@
 package ru.neko.online.client.components
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.edit
 
 class AccountPrefs(context: Context) {
@@ -80,18 +81,25 @@ class AccountPrefs(context: Context) {
             remove("userdata_water")
             remove("userdata_toys")
         }
+        clearCats()
         return true
     }
 
-    fun insertCat(data: String) {
-        val num = accountPrefs.all.size + 1
-        accountCatsPrefs.edit {
-            putString("cat:$num", data)
+    fun insertCat(data: String, id: Long): Boolean {
+        Log.d("PrefCats", data)
+        if(data == accountCatsPrefs.getString("cat:$id", "null")) {
+            Log.d("PrefCats", "false")
+            return false
         }
+        accountCatsPrefs.edit {
+            putString("cat:$id", data)
+        }
+        return true
     }
     fun getAllCats(): MutableList<String> {
         val list = ArrayList<String>()
         accountCatsPrefs.all.forEach {
+            Log.d("PrefCats", "Return $it")
             list.add(it.value as String)
         }
         return list

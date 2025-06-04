@@ -20,7 +20,7 @@ class WelcomeFragment : Fragment(R.layout.welcome_fragment) {
         val settings: ImageView = view.findViewById<ImageView>(R.id.server_config_imageview)
         context?.let {
             val size = it.resources.getDimensionPixelSize(R.dimen.neko_display_size)
-            randomCatIcon.setImageBitmap(Cat(it, Random.nextLong()).createBitmap(size, size))
+            randomCatIcon.setImageBitmap(Cat(it, Random.nextLong(), null, null).createBitmap(size, size))
         }
         (activity as WelcomeActivity?)?.setDefaultToolbarTitle()
         registerButton.setOnClickListener {

@@ -35,10 +35,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import ru.neko.online.client.R
 import ru.neko.online.client.components.AccountPrefs
+import ru.neko.online.client.components.Cat
+import ru.neko.online.client.components.cache.CacheUtils
 import ru.neko.online.client.components.models.CatModel
 import ru.neko.online.client.components.models.UserprefsModel
-import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.models.network.TokenUser
+import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.utils.BottomSheet
 import ru.neko.online.client.components.viewmodels.MainViewModel
 import ru.neko.online.client.config.Prefs
@@ -66,6 +68,10 @@ class MainActivity : AppCompatActivity() {
 
     private val model: MainViewModel by viewModels()
 
+    private val catIconSize: Int by lazy {
+        resources.getDimensionPixelSize(R.dimen.neko_display_size)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!configurePrefs()) {
@@ -80,15 +86,21 @@ class MainActivity : AppCompatActivity() {
         syncIndicator = findViewById<LinearLayoutCompat>(R.id.sync_indicator)
         materialToolbar = findViewById<MaterialToolbar>(R.id.toolbar)
 
+        prepareUi()
         setSupportActionBar(materialToolbar)
 
-        prepareModel(this)
-        infoBottomSheet = BottomSheet(this)
-        pagerAdapter = NekoMainAdapter(this)
-        configureUi()
+        lifecycleScope.launch {
+            infoBottomSheet = BottomSheet(this@MainActivity)
+            if (prepareModel(this@MainActivity)) {
+                pagerAdapter = NekoMainAdapter(this@MainActivity)
+                withContext(Dispatchers.Main) {
+                    configureUi()
+                }
+            }
+        }
     }
 
-    private fun prepareModel(context: Context) {
+    private suspend fun prepareModel(context: Context): Boolean {
         val data = ArrayList<UserprefsModel>()
         var accountPrefs: AccountPrefs? = AccountPrefs(context)
         data.add(UserprefsModel("NCoins", accountPrefs!!.userDataNCoins, R.drawable.ic_error))
@@ -101,11 +113,36 @@ class MainActivity : AppCompatActivity() {
         val catData = ArrayList<CatModel>()
         val cats = accountPrefs.getAllCats()
         accountPrefs = null
+
+        var diskCache = CacheUtils.initDiskCache(context)
         cats.forEach {
             val jsonObj = JSONObject(it)
-            catData.add(CatModel(jsonObj.getLong("id"), jsonObj.getString("name"), jsonObj.getLong("seed")))
+            val id = jsonObj.getLong("id")
+            val seed = jsonObj.getLong("seed")
+            catData.add(
+                CatModel(
+                    id,
+                    jsonObj.getString("name"),
+                    seed
+                )
+            )
+            withContext(Dispatchers.IO) {
+                var icon = CacheUtils.loadIconFromDiskCache(diskCache!!, id.toString())
+                if (icon == null) {
+                    icon = Cat(context, seed, null, null).createBitmap(catIconSize, catIconSize)
+                    CacheUtils.saveIconToDiskCache(diskCache, id.toString(), icon)
+                }
+                model.addIconToCache(id.toInt(), icon)
+            }
+        }
+        diskCache?.let {
+            CacheUtils.closeDiskCache(it)
+        }
+        catData.sortBy {
+            it.name
         }
         model.setCatsLiveData(catData)
+        return true
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -167,10 +204,12 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
                 }
             }
+            runSyncCats()
         }
-        lifecycleScope.launch {
-            val resultsCats = syncUserCats(this@MainActivity)
-        }
+    }
+
+    private suspend fun runSyncCats() {
+        syncUserCats(this)
     }
 
     private fun showOfflineDialog(context: Context) {
@@ -257,7 +296,14 @@ class MainActivity : AppCompatActivity() {
             }
 
             accountPrefs = null
-            model.setUserprefsLiveData(createUserprefsData(jsonObj.getInt("ncoins"), jsonObj.getInt("food"), jsonObj.getInt("water"), jsonObj.getInt("toys")))
+            model.setUserprefsLiveData(
+                createUserprefsData(
+                    jsonObj.getInt("ncoins"),
+                    jsonObj.getInt("food"),
+                    jsonObj.getInt("water"),
+                    jsonObj.getInt("toys")
+                )
+            )
 
             return Pair(true, true)
         }
@@ -298,13 +344,31 @@ class MainActivity : AppCompatActivity() {
         } else {
 
             val catData = ArrayList<CatModel>()
+            val diskCache = CacheUtils.initDiskCache(context)
             accountPrefs.clearCats()
             jsonArray.toJSONObject(jsonArray).keys().forEach {
-                accountPrefs.insertCat(it)
+                Log.d("JsonCats", it)
                 val jsonObj = JSONObject(it)
-                catData.add(CatModel(jsonObj.getLong("id"), jsonObj.getString("name"), jsonObj.getLong("seed")))
+                val id: Long = jsonObj.getLong("id")
+                val seed: Long = jsonObj.getLong("seed")
+                accountPrefs.insertCat(it, id)
+                catData.add(CatModel(id, jsonObj.getString("name"), seed))
+                var icon = CacheUtils.loadIconFromDiskCache(diskCache!!, id.toString())
+                if (icon == null) {
+                    icon = Cat(context, seed, null, null).createBitmap(catIconSize, catIconSize)
+                    CacheUtils.saveIconToDiskCache(diskCache, id.toString(), icon)
+                }
+                model.addIconToCache(id.toInt(), icon)
             }
-            model.setCatsLiveData(catData)
+            diskCache?.let {
+                CacheUtils.closeDiskCache(it)
+            }
+            catData.sortBy {
+                it.name
+            }
+            withContext(Dispatchers.Main) {
+                model.setCatsLiveData(catData)
+            }
 
             accountPrefs = null
 
@@ -312,7 +376,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun createUserprefsData(ncoins: Int, food: Int, water: Int, toys: Int): MutableList<UserprefsModel> {
+    private fun createUserprefsData(
+        ncoins: Int,
+        food: Int,
+        water: Int,
+        toys: Int
+    ): MutableList<UserprefsModel> {
         val data = ArrayList<UserprefsModel>()
         data.add(UserprefsModel("NCoins", ncoins, R.drawable.ic_error))
         data.add(UserprefsModel("Еда", food, R.drawable.ic_foodbowl_filled))
@@ -321,7 +390,7 @@ class MainActivity : AppCompatActivity() {
         return data
     }
 
-    private fun configureUi() {
+    private fun prepareUi() {
         materialToolbar?.let { v ->
             ViewCompat.setOnApplyWindowInsetsListener(v) { view, listener ->
                 val insets = listener.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -335,6 +404,11 @@ class MainActivity : AppCompatActivity() {
                 view.updatePadding(insets.left, 0, insets.right, insets.bottom)
                 WindowInsetsCompat.CONSUMED
             }
+        }
+    }
+
+    private fun configureUi() {
+        bottomNavigation?.let { v ->
             v.setOnItemSelectedListener { item ->
                 when (item.itemId) {
                     R.id.home_menu -> {

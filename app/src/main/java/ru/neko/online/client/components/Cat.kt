@@ -20,24 +20,23 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ColorFilter
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import androidx.core.content.ContextCompat
 import ru.neko.online.client.R
 import java.io.ByteArrayOutputStream
-import java.util.Random
-import java.util.concurrent.ThreadLocalRandom
-import kotlin.math.abs
 import kotlin.math.min
+import kotlin.random.Random
 
 /**
  * It's a cat.
  */
-class Cat(context: Context, val seed: Long) : Drawable() {
-    private var mNotSoRandom: Random? = null
+class Cat(context: Context, seed: Long, val name: String?, val id: Long?) : Drawable() {
+
+    private var mNotSoRandom: Random = notSoRandom(seed)
     private var mBitmap: Bitmap? = null
-    var name: String? = null
     var bodyColor: Int
         private set
     private var mFootType: Int
@@ -46,21 +45,13 @@ class Cat(context: Context, val seed: Long) : Drawable() {
     private val catParts: CatParts = CatParts(context)
 
     init {
-
-        this.name = context.getString(
-            R.string.default_cat_name,
-            (this.seed % 1000).toString()
-        )
-
-        val nsr = notSoRandom(seed)
-
         // body color
-        this.bodyColor = chooseP(nsr, P_BODY_COLORS)
+        this.bodyColor = chooseP(mNotSoRandom, P_BODY_COLORS)
         if (this.bodyColor == 0) this.bodyColor = Color.HSVToColor(
             floatArrayOf(
-                nsr.nextFloat() * 360f,
-                frandrange(nsr, 0.5f, 1f),
-                frandrange(nsr, 0.5f, 1f)
+                mNotSoRandom.nextFloat() * 360f,
+                frandrange(mNotSoRandom, 0.5f, 1f),
+                frandrange(mNotSoRandom, 0.5f, 1f)
             )
         )
 
@@ -91,31 +82,31 @@ class Cat(context: Context, val seed: Long) : Drawable() {
             catParts.rightEarInside
         )
 
-        tint(chooseP(nsr, P_BELLY_COLORS), catParts.belly)
-        tint(chooseP(nsr, P_BELLY_COLORS), catParts.back)
-        val faceColor = chooseP(nsr, P_BELLY_COLORS)
+        tint(chooseP(mNotSoRandom, P_BELLY_COLORS), catParts.belly)
+        tint(chooseP(mNotSoRandom, P_BELLY_COLORS), catParts.back)
+        val faceColor = chooseP(mNotSoRandom, P_BELLY_COLORS)
         tint(faceColor, catParts.faceSpot)
         if (!isDark(faceColor)) {
             tint(-0x1000000, catParts.mouth, catParts.nose)
         }
 
         mFootType = 0
-        if (nsr.nextFloat() < 0.25f) {
+        if (mNotSoRandom.nextFloat() < 0.25f) {
             mFootType = 4
             tint(-0x1, catParts.foot1, catParts.foot2, catParts.foot3, catParts.foot4)
         } else {
-            if (nsr.nextFloat() < 0.25f) {
+            if (mNotSoRandom.nextFloat() < 0.25f) {
                 mFootType = 2
                 tint(-0x1, catParts.foot1, catParts.foot3)
-            } else if (nsr.nextFloat() < 0.25f) {
+            } else if (mNotSoRandom.nextFloat() < 0.25f) {
                 mFootType = 3 // maybe -2 would be better? meh.
                 tint(-0x1, catParts.foot2, catParts.foot4)
-            } else if (nsr.nextFloat() < 0.1f) {
+            } else if (mNotSoRandom.nextFloat() < 0.1f) {
                 mFootType = 1
                 tint(
                     -0x1,
                     choose(
-                        nsr,
+                        mNotSoRandom,
                         catParts.foot1,
                         catParts.foot2,
                         catParts.foot3,
@@ -125,32 +116,29 @@ class Cat(context: Context, val seed: Long) : Drawable() {
             }
         }
 
-        tint(if (nsr.nextFloat() < 0.333f) -0x1 else this.bodyColor, catParts.tailCap)
+        tint(if (mNotSoRandom.nextFloat() < 0.333f) -0x1 else this.bodyColor, catParts.tailCap)
 
         val capColor =
-            chooseP(nsr, if (isDark(this.bodyColor)) P_LIGHT_SPOT_COLORS else P_DARK_SPOT_COLORS)
+            chooseP(mNotSoRandom, if (isDark(this.bodyColor)) P_LIGHT_SPOT_COLORS else P_DARK_SPOT_COLORS)
         tint(capColor, catParts.cap)
 
         //tint(chooseP(nsr, isDark(bodyColor) ? P_LIGHT_SPOT_COLORS : P_DARK_SPOT_COLORS), D.nose);
-        val collarColor = chooseP(nsr, P_COLLAR_COLORS)
+        val collarColor = chooseP(mNotSoRandom, P_COLLAR_COLORS)
         tint(collarColor, catParts.collar)
-        mBowTie = nsr.nextFloat() < 0.1f
+        mBowTie = mNotSoRandom.nextFloat() < 0.1f
         tint(if (mBowTie) collarColor else 0, catParts.bowtie)
 
         val messages = context.resources.getStringArray(
-            if (nsr.nextFloat() < 0.1f) R.array.rare_cat_messages else R.array.cat_messages
+            if (mNotSoRandom.nextFloat() < 0.1f) R.array.rare_cat_messages else R.array.cat_messages
         )
-        mFirstMessage = choose(nsr, *messages as Array) as String?
-        if (nsr.nextFloat() < 0.5f) mFirstMessage = mFirstMessage + mFirstMessage + mFirstMessage
+        mFirstMessage = choose(mNotSoRandom, *messages as Array) as String?
+        if (mNotSoRandom.nextFloat() < 0.5f) mFirstMessage = mFirstMessage + mFirstMessage + mFirstMessage
     }
 
     @Synchronized
     private fun notSoRandom(seed: Long): Random {
-        if (mNotSoRandom == null) {
-            mNotSoRandom = Random()
-            mNotSoRandom!!.setSeed(seed)
-        }
-        return mNotSoRandom!!
+        mNotSoRandom = Random(seed)
+        return mNotSoRandom
     }
 
     override fun draw(canvas: Canvas) {
@@ -167,20 +155,25 @@ class Cat(context: Context, val seed: Long) : Drawable() {
 
     private fun slowDraw(canvas: Canvas, x: Int, y: Int, w: Int, h: Int) {
         for (i in catParts.drawingOrder.indices) {
-            val d = catParts.drawingOrder[i]
-            if (d != null) {
-                d.setBounds(x, y, x + w, y + h)
-                d.draw(canvas)
+            catParts.drawingOrder[i]?.let {
+                it.setBounds(x, y, x + w, y + h)
+                it.draw(canvas)
             }
         }
     }
 
     fun createBitmap(w: Int, h: Int): Bitmap {
-        if (mBitmap != null && mBitmap!!.width == w && mBitmap!!.height == h) {
-            return mBitmap!!.copy(mBitmap!!.config!!, true)
-        }
         val result = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        slowDraw(Canvas(result), 0, 0, w, h)
+        val canvas = Canvas(result)
+        val pt = Paint()
+        val hsv = FloatArray(3)
+        Color.colorToHSV(bodyColor, hsv)
+        hsv[2] = if (hsv[2] > 0.5f) hsv[2] - 0.25f else hsv[2] + 0.25f
+        pt.color = Color.HSVToColor(hsv)
+        val r = (w / 2).toFloat()
+        canvas.drawCircle(r, r, r, pt)
+        val m = w / 10
+        slowDraw(canvas, m, m, w - m - m, h - m - m)
         return result
     }
 
@@ -340,12 +333,6 @@ class Cat(context: Context, val seed: Long) : Drawable() {
             val g = (color and 0x00FF00) shr 8
             val b = color and 0x0000FF
             return (r + g + b) < 0x80
-        }
-
-
-        @JvmStatic
-        fun create(context: Context): Cat {
-            return Cat(context, abs(ThreadLocalRandom.current().nextInt().toDouble()).toLong())
         }
 
         fun recompressBitmap(bitmap: Bitmap): Icon? {
