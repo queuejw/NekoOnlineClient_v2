@@ -115,4 +115,5 @@
     <string name="logout">Выход</string>
     <string name="help">Помощь</string>
     <string name="dialog_server_config_error">Ошибка конфигурации сервера. Пожалуйста, исправьте ошибку в настройках конфигурации сервера или сбросьте её.</string>
+    <string name="empty_cat_list_tip">У вас ещё нет котиков. Давайте исправим это?\n=^∇^*=</string>
 </resources>

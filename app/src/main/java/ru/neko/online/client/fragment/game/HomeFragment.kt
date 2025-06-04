@@ -22,6 +22,8 @@ import ru.neko.online.client.components.viewmodels.MainViewModel
 class HomeFragment : Fragment(R.layout.home_fragment) {
 
     private var recyclerView: RecyclerView? = null
+    private var emptyCatsTextView: MaterialTextView? = null
+
     private var mAdapter: CatAdapter? = null
 
     private val viewModel: MainViewModel by activityViewModels()
@@ -29,13 +31,16 @@ class HomeFragment : Fragment(R.layout.home_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById<RecyclerView>(R.id.cat_list)
+        emptyCatsTextView = view.findViewById<MaterialTextView>(R.id.empty_cat_list_text)
         val catsData = viewModel.catsLiveData
         catsData.value?.let { data ->
             mAdapter = CatAdapter(requireContext(), getNormalCatList(data, requireContext()))
         }
         catsData.observe(viewLifecycleOwner) {
             context?.let { context ->
-                mAdapter?.setNewCats(getNormalCatList(it, context))
+                val list = getNormalCatList(it, context)
+                emptyCatsTextView?.visibility = if(list.isEmpty()) View.VISIBLE else View.GONE
+                mAdapter?.setNewCats(list)
             }
         }
         recyclerView?.let {
