@@ -14,6 +14,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.URLParserException
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.ClosedByteChannelException
@@ -23,6 +24,7 @@ import org.json.JSONObject
 import ru.neko.online.client.components.AccountPrefs
 import java.net.SocketException
 import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 class NetworkManager(context: Context) {
 
@@ -81,6 +83,12 @@ class NetworkManager(context: Context) {
         } catch (e: ClosedByteChannelException) {
             Log.e("Network", e.stackTraceToString())
             return Pair(null, 503)
+        } catch (e: URLParserException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, -1)
+        } catch (e: UnknownHostException) {
+            Log.e("Network", e.stackTraceToString())
+            return Pair(null, -1)
         }
     }
 }

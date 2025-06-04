@@ -114,4 +114,5 @@
     <string name="about">About</string>
     <string name="logout">Logout</string>
     <string name="help">Help</string>
+    <string name="dialog_server_config_error">Server configuration error. Please correct the server configuration or reset it.</string>
 </resources>

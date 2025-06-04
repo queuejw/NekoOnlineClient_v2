@@ -20,8 +20,8 @@ import ru.neko.online.client.R
 import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.activity.WelcomeActivity
 import ru.neko.online.client.components.AccountPrefs
-import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.models.network.RegUser
+import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.config.Prefs
 
 class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragment) {
@@ -79,7 +79,10 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
             prefs?.let {
                 val network = NetworkManager(context)
                 val result =
-                    network.networkPost("register", RegUser(it.accountName!!, it.accountUsername!!, it.accountPassword!!))
+                    network.networkPost(
+                        "register",
+                        RegUser(it.accountName!!, it.accountUsername!!, it.accountPassword!!)
+                    )
 
                 val status = result.second
                 val jsonObj: JSONObject? = result.first as JSONObject?
@@ -99,6 +102,11 @@ class FinishRegistrationFragment : Fragment(R.layout.finish_registration_fragmen
                             HttpStatusCode.Conflict.value -> showErrorDialog(
                                 context,
                                 getString(R.string.dialog_reg_account_error)
+                            )
+
+                            -1 -> showErrorDialog(
+                                context,
+                                getString(R.string.dialog_server_config_error)
                             )
 
                             else -> showErrorDialog(

@@ -114,4 +114,5 @@
     <string name="about">Про игру</string>
     <string name="logout">Выход</string>
     <string name="help">Помощь</string>
+    <string name="dialog_server_config_error">Ошибка конфигурации сервера. Пожалуйста, исправьте ошибку в настройках конфигурации сервера или сбросьте её.</string>
 </resources>

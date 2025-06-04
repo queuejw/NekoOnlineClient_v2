@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ru.neko.online.client.R
-import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.models.UserprefsModel
 import ru.neko.online.client.components.viewmodels.MainViewModel
 
@@ -46,12 +45,15 @@ class UserFragment : Fragment(R.layout.user_fragment) {
     }
 }
 
-class UserprefsAdapter(var data: MutableList<UserprefsModel>, val context: Context): RecyclerView.Adapter<UserprefsHolder>() {
+class UserprefsAdapter(var data: MutableList<UserprefsModel>, val context: Context) :
+    RecyclerView.Adapter<UserprefsHolder>() {
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): UserprefsHolder {
-        return UserprefsHolder(LayoutInflater.from(parent.context).inflate(R.layout.userpref_holder, parent, false))
+        return UserprefsHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.userpref_holder, parent, false)
+        )
     }
 
     fun updateData(newData: MutableList<UserprefsModel>) {
@@ -77,12 +79,13 @@ class UserprefsAdapter(var data: MutableList<UserprefsModel>, val context: Conte
     }
 }
 
-class UserprefsHolder(view: View): RecyclerView.ViewHolder(view) {
+class UserprefsHolder(view: View) : RecyclerView.ViewHolder(view) {
     val imageView: ImageView = view.findViewById<ImageView>(android.R.id.icon)
     val textView: MaterialTextView = view.findViewById<MaterialTextView>(android.R.id.text1)
 }
 
-class UserprefsDiff(val old: MutableList<UserprefsModel>, val new: MutableList<UserprefsModel>): DiffUtil.Callback() {
+class UserprefsDiff(val old: MutableList<UserprefsModel>, val new: MutableList<UserprefsModel>) :
+    DiffUtil.Callback() {
 
     override fun getOldListSize(): Int {
         return old.size

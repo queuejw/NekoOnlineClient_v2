@@ -113,5 +113,6 @@ class WelcomeActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         infoBottomSheet = null
+        fragmentContainer = null
     }
 }

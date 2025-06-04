@@ -346,28 +346,31 @@ class MainActivity : AppCompatActivity() {
             val catData = ArrayList<CatModel>()
             val diskCache = CacheUtils.initDiskCache(context)
             accountPrefs.clearCats()
-            jsonArray.toJSONObject(jsonArray).keys().forEach {
-                Log.d("JsonCats", it)
-                val jsonObj = JSONObject(it)
-                val id: Long = jsonObj.getLong("id")
-                val seed: Long = jsonObj.getLong("seed")
-                accountPrefs.insertCat(it, id)
-                catData.add(CatModel(id, jsonObj.getString("name"), seed))
-                var icon = CacheUtils.loadIconFromDiskCache(diskCache!!, id.toString())
-                if (icon == null) {
-                    icon = Cat(context, seed, null, null).createBitmap(catIconSize, catIconSize)
-                    CacheUtils.saveIconToDiskCache(diskCache, id.toString(), icon)
+            val keys = jsonArray.toJSONObject(jsonArray).keys()
+            if (keys != null) {
+                keys.forEach {
+                    Log.d("JsonCats", it)
+                    val jsonObj = JSONObject(it)
+                    val id: Long = jsonObj.getLong("id")
+                    val seed: Long = jsonObj.getLong("seed")
+                    accountPrefs.insertCat(it, id)
+                    catData.add(CatModel(id, jsonObj.getString("name"), seed))
+                    var icon = CacheUtils.loadIconFromDiskCache(diskCache!!, id.toString())
+                    if (icon == null) {
+                        icon = Cat(context, seed, null, null).createBitmap(catIconSize, catIconSize)
+                        CacheUtils.saveIconToDiskCache(diskCache, id.toString(), icon)
+                    }
+                    model.addIconToCache(id.toInt(), icon)
                 }
-                model.addIconToCache(id.toInt(), icon)
-            }
-            diskCache?.let {
-                CacheUtils.closeDiskCache(it)
-            }
-            catData.sortBy {
-                it.name
-            }
-            withContext(Dispatchers.Main) {
-                model.setCatsLiveData(catData)
+                diskCache?.let {
+                    CacheUtils.closeDiskCache(it)
+                }
+                catData.sortBy {
+                    it.name
+                }
+                withContext(Dispatchers.Main) {
+                    model.setCatsLiveData(catData)
+                }
             }
 
             accountPrefs = null

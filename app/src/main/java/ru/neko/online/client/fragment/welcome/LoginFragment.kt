@@ -154,6 +154,11 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                                     getString(R.string.dialog_account_error)
                                 )
 
+                                -1 -> showErrorDialog(
+                                    context,
+                                    getString(R.string.dialog_server_config_error)
+                                )
+
                                 else -> showErrorDialog(
                                     context,
                                     getString(R.string.dialog_other_error)
@@ -205,6 +210,12 @@ class LoginFragment : Fragment(R.layout.login_fragment) {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        passwordEditText = null
+        usernameEditText = null
     }
 
     private fun showErrorDialog(context: Context, errorMessage: String) {
