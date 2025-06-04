@@ -147,7 +147,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        prepareClient(0)
+        lifecycleScope.launch {
+            prepareClient(0)
+        }
     }
 
     private fun editSnackbarText(newText: String) {
@@ -169,47 +171,71 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun prepareClient(attempt: Int) {
+    private suspend fun prepareClient(attempt: Int): Boolean {
         if (attempt > 3) {
             showOfflineDialog(this)
             connectionSnackbar = null
-            return
+            return false
         }
-        lifecycleScope.launch {
-            val resultsUserprefs = syncUserData(this@MainActivity)
-            val connectionBool = resultsUserprefs.second
-            if (!connectionBool) {
-                withContext(Dispatchers.Main) {
-                    createSnackbar()
-                    editSnackbarText(getString(R.string.snackbar_connection_error, 5))
-                    showSnackbar()
-                }
-                for (i in 5 downTo 0) {
-                    delay(1000)
-                    withContext(Dispatchers.Main) {
-                        editSnackbarText(getString(R.string.snackbar_connection_error, i))
-                    }
-                }
-                withContext(Dispatchers.Main) {
-                    connectionSnackbar?.dismiss()
-                }
-                prepareClient(attempt + 1)
-                cancel()
+        val resultsUserprefs = syncUserData(this@MainActivity)
+        val connectionBool = resultsUserprefs.second
+        if (!connectionBool) {
+            withContext(Dispatchers.Main) {
+                createSnackbar()
+                editSnackbarText(getString(R.string.snackbar_connection_error, 5))
+                showSnackbar()
             }
-            val dataStatus = resultsUserprefs.first
-            if (!dataStatus && connectionBool) {
-                Log.d("Main", "Ошибка при получении данных")
+            for (i in 5 downTo 0) {
+                delay(1000)
                 withContext(Dispatchers.Main) {
-                    viewPager?.animate()?.alpha(0.5f)?.setDuration(200)?.start()
-                    Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
+                    editSnackbarText(getString(R.string.snackbar_connection_error, i))
                 }
             }
-            runSyncCats()
+            withContext(Dispatchers.Main) {
+                connectionSnackbar?.dismiss()
+            }
+            return prepareClient(attempt + 1)
         }
+        val dataStatus = resultsUserprefs.first
+        if (!dataStatus) {
+            Log.d("Main", "Ошибка при получении данных")
+            withContext(Dispatchers.Main) {
+                viewPager?.animate()?.alpha(0.5f)?.setDuration(200)?.start()
+                Toast.makeText(this@MainActivity, "Ошибка входа", Toast.LENGTH_LONG).show()
+            }
+            return false
+        }
+        runSyncCats()
+        return true
     }
 
     private suspend fun runSyncCats() {
-        syncUserCats(this)
+        val cats = syncUserCats(this)
+        if(cats.first && cats.second) {
+            withContext(Dispatchers.Main) {
+                prefs?.let {
+                    if (it.autoSyncTime != 0) {
+                        runAutoSync()
+                    }
+                }
+            }
+        }
+    }
+
+    fun runAutoSync() {
+        if (prefs == null) return
+
+        val delayTime = prefs!!.autoSyncTime.toLong()
+        if (delayTime == 0L) return
+
+        lifecycleScope.launch {
+            delay(delayTime)
+            prepareClient(0)
+            withContext(Dispatchers.Main) {
+                runAutoSync()
+                cancel()
+            }
+        }
     }
 
     private fun showOfflineDialog(context: Context) {
@@ -490,6 +516,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.settings_menu -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
 

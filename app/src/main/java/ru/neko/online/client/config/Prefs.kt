@@ -13,4 +13,8 @@ class Prefs(context: Context) {
     var isFirstLaunch
         get() = preferences.getBoolean("isFirstLaunch", true)
         set(value) = preferences.edit { putBoolean("isFirstLaunch", value) }
+
+    var autoSyncTime
+        get() = preferences.getInt("auto_sync", 0)
+        set(value) = preferences.edit { putInt("auto_sync", value) }
 }
