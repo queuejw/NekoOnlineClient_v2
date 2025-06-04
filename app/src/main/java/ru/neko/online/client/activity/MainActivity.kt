@@ -345,9 +345,9 @@ class MainActivity : AppCompatActivity() {
             val catData = ArrayList<CatModel>()
             val diskCache = CacheUtils.initDiskCache(context)
             accountPrefs.clearCats()
-            val keys: Iterator<String>? = jsonArray.toJSONObject(jsonArray).keys()
-            if (keys != null) {
-                keys.forEach {
+            val array: JSONObject? = jsonArray.toJSONObject(jsonArray)
+            if (array != null) {
+                array.keys().forEach {
                     Log.d("JsonCats", it)
                     val jsonObj = JSONObject(it)
                     val id: Long = jsonObj.getLong("id")
