@@ -1,4 +1,11 @@
 <resources>
+
+    <color name="tile">#202124</color>
+    <color name="tile_text">#9c9c9e</color>
+    <color name="foodbg">#954600</color>
+    <color name="waterbg">#004187</color>
+    <color name="toybg">#8E002E</color>
+
     <color name="md_theme_primary">#B1D18A</color>
     <color name="md_theme_onPrimary">#1F3701</color>
     <color name="md_theme_primaryContainer">#354E16</color>

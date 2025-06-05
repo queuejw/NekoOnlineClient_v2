@@ -14,13 +14,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textview.MaterialTextView
 import ru.neko.online.client.R
+import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.models.UserprefsModel
 import ru.neko.online.client.components.viewmodels.MainViewModel
 
 class UserFragment : Fragment(R.layout.user_fragment) {
 
     private var recyclerView: RecyclerView? = null
+
     private var mAdapter: UserprefsAdapter? = null
+
+    private var usernameTextView: MaterialTextView? = null
 
     private val viewModel: MainViewModel by activityViewModels()
 
@@ -28,7 +32,11 @@ class UserFragment : Fragment(R.layout.user_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById<RecyclerView>(R.id.userprefs_recyclerview)
+        usernameTextView = view.findViewById<MaterialTextView>(R.id.username_textview)
         context?.let {
+            var prefs: AccountPrefs? = AccountPrefs(it)
+            usernameTextView?.text = prefs?.userDataName
+            prefs = null
             val userprefsData = viewModel.userprefsLiveData
             userprefsData.value?.let { data ->
                 mAdapter = UserprefsAdapter(data, it)

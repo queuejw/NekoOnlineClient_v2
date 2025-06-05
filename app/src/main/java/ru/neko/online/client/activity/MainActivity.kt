@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
 
         val catData = ArrayList<CatModel>()
         val cats = accountPrefs.getAllCats()
-        accountPrefs = null
 
         var diskCache = CacheUtils.initDiskCache(context)
         cats.forEach {
@@ -144,6 +143,11 @@ class MainActivity : AppCompatActivity() {
             it.name
         }
         model.setCatsLiveData(catData)
+
+        model.controlsLiveData.value = Triple(accountPrefs.foodState, accountPrefs.waterState, accountPrefs.toyState)
+
+        accountPrefs = null
+
         return true
     }
 
@@ -208,6 +212,7 @@ class MainActivity : AppCompatActivity() {
             return false
         }
         runSyncCats()
+        syncUserControls(this@MainActivity)
         Log.d("Sync", "return true")
         return true
     }
@@ -336,6 +341,58 @@ class MainActivity : AppCompatActivity() {
                     jsonObj.getInt("toys")
                 )
             )
+
+            return Pair(true, true)
+        }
+    }
+
+    // first - data status
+    // second - connection status
+    private suspend fun syncUserControls(context: Context): Pair<Boolean, Boolean> {
+        Log.d("Network", "Sync data")
+        var accountPrefs: AccountPrefs? = AccountPrefs(context)
+
+        val token = accountPrefs?.userToken
+
+        if (token == null) {
+            return Pair(false, false)
+        }
+        withContext(Dispatchers.Main) {
+            animateSyncIndicator(false)
+        }
+        val network = NetworkManager(context)
+        val result = network.networkPost("controls", TokenUser(token))
+
+        val jsonObj: JSONObject? = result.first as JSONObject?
+        val status: Int = result.second
+
+        withContext(Dispatchers.Main) {
+            network.closeClient()
+            animateSyncIndicator(true)
+        }
+        if (status == HttpStatusCode.ServiceUnavailable.value) {
+            return Pair(false, false)
+        }
+
+        if (jsonObj == null) {
+            accountPrefs = null
+            return Pair(false, true)
+
+        } else {
+
+            val food = jsonObj.getBoolean("food")
+            val water = jsonObj.getInt("water")
+            val toy = jsonObj.getBoolean("toy")
+
+            accountPrefs.apply {
+                foodState = food
+                waterState = water
+                toyState = toy
+            }
+
+            model.controlsLiveData.value = Triple(food, water, toy)
+
+            accountPrefs = null
 
             return Pair(true, true)
         }

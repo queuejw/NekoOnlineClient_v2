@@ -39,6 +39,8 @@
     <string name="control_food_subtitle">Tap to refill</string>
     <string name="control_food_status_full">Full</string>
     <string name="control_food_status_empty">Empty</string>
+    <string name="control_water_status">%1$d mL</string>
+
     <string name="username_finish_registration_tip">Your in-game nickname: %s\nClick the button below to create an account.</string>
     <string name="welcome">Welcome!</string>
     <string name="welcome_1">Welcome to Neko Online!</string>
@@ -116,4 +118,5 @@
     <string name="help">Help</string>
     <string name="dialog_server_config_error">Server configuration error. Please correct the server configuration or reset it.</string>
     <string name="empty_cat_list_tip">You haven’t collected any kitties. Ready to start?\n=^∇^*=</string>
+    <string name="dialog_controls_error">Не получилось обновить плитку. Попробуйте ещё раз.</string>
 </resources>

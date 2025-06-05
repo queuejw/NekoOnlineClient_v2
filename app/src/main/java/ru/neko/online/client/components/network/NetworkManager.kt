@@ -69,9 +69,11 @@ class NetworkManager(context: Context) {
 
             val text = response.bodyAsText()
 
-            when (path) {
-                "cats" -> return Pair(JSONArray(text), status)
-                else -> return Pair(JSONObject(text), status)
+            return when (path) {
+                "cats" -> Pair(JSONArray(text), status)
+                "controls/food" -> Pair(null, status)
+                "controls/toy" -> Pair(null, status)
+                else -> Pair(JSONObject(text), status)
             }
 
         } catch (e: SocketException) {

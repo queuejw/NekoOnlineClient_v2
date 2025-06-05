@@ -60,6 +60,18 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getInt("userdata_toys", 0)
         set(value) = accountPrefs.edit { putInt("userdata_toys", value) }
 
+    var foodState
+        get() = accountPrefs.getBoolean("food_state", false)
+        set(value) = accountPrefs.edit { putBoolean("food_state", value) }
+
+    var waterState
+        get() = accountPrefs.getInt("water_state", 0)
+        set(value) = accountPrefs.edit { putInt("water_state", value) }
+
+    var toyState
+        get() = accountPrefs.getBoolean("toy_state", false)
+        set(value) = accountPrefs.edit { putBoolean("toy_state", value) }
+
 
     fun clearServerConfig(): Boolean {
         accountPrefs.edit {

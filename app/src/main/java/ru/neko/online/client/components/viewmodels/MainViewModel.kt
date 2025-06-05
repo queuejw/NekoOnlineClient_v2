@@ -2,7 +2,6 @@ package ru.neko.online.client.components.viewmodels
 
 import android.graphics.Bitmap
 import androidx.collection.SparseArrayCompat
-import androidx.collection.contains
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.neko.online.client.components.models.CatModel
@@ -16,6 +15,9 @@ class MainViewModel: ViewModel() {
     }
     val catsLiveData: MutableLiveData<MutableList<CatModel>> by lazy {
         MutableLiveData<MutableList<CatModel>>()
+    }
+    val controlsLiveData: MutableLiveData<Triple<Boolean, Int, Boolean>> by lazy {
+        MutableLiveData<Triple<Boolean, Int, Boolean>>()
     }
     private val catIconCache: SparseArrayCompat<Bitmap?> by lazy {
         SparseArrayCompat<Bitmap?>()

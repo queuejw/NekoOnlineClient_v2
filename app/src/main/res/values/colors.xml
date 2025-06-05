@@ -3,6 +3,17 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <color name="food">#FF8000</color>
+    <color name="water">#0080FF</color>
+    <color name="toy">#FF4080</color>
+
+    <color name="foodbg">#C76100</color>
+    <color name="waterbg">#0061C5</color>
+    <color name="toybg">#C30046</color>
+
+    <color name="tile">#CECECE</color>
+    <color name="tile_text">#202124</color>
+
     <color name="md_theme_primary">#4C662B</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>
     <color name="md_theme_primaryContainer">#CDEDA3</color>
