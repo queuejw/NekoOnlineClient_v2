@@ -15,6 +15,6 @@ class Prefs(context: Context) {
         set(value) = preferences.edit { putBoolean("isFirstLaunch", value) }
 
     var autoSyncTime
-        get() = preferences.getInt("auto_sync", 0)
+        get() = preferences.getInt("auto_sync", 60)
         set(value) = preferences.edit { putInt("auto_sync", value) }
 }

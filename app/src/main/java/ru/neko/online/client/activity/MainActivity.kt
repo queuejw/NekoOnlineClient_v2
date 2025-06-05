@@ -68,6 +68,8 @@ class MainActivity : AppCompatActivity() {
 
     private val model: MainViewModel by viewModels()
 
+    private var autoSyncIsRunning = false
+
     private val catIconSize: Int by lazy {
         resources.getDimensionPixelSize(R.dimen.neko_display_size)
     }
@@ -206,6 +208,7 @@ class MainActivity : AppCompatActivity() {
             return false
         }
         runSyncCats()
+        Log.d("Sync", "return true")
         return true
     }
 
@@ -214,7 +217,7 @@ class MainActivity : AppCompatActivity() {
         if(cats.first && cats.second) {
             withContext(Dispatchers.Main) {
                 prefs?.let {
-                    if (it.autoSyncTime != 0) {
+                    if (it.autoSyncTime != 0 && !autoSyncIsRunning) {
                         runAutoSync()
                     }
                 }
@@ -225,13 +228,16 @@ class MainActivity : AppCompatActivity() {
     fun runAutoSync() {
         if (prefs == null) return
 
-        val delayTime = prefs!!.autoSyncTime.toLong()
+        val delayTime = prefs!!.autoSyncTime.toLong() * 1000
         if (delayTime == 0L) return
+
+        autoSyncIsRunning = true
 
         lifecycleScope.launch {
             delay(delayTime)
             prepareClient(0)
             withContext(Dispatchers.Main) {
+                autoSyncIsRunning = false
                 runAutoSync()
                 cancel()
             }
