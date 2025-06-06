@@ -73,6 +73,7 @@ class NetworkManager(context: Context) {
                 "cats" -> Pair(JSONArray(text), status)
                 "controls/food" -> Pair(null, status)
                 "controls/toy" -> Pair(null, status)
+                "controls/water" -> Pair(null, status)
                 else -> Pair(JSONObject(text), status)
             }
 

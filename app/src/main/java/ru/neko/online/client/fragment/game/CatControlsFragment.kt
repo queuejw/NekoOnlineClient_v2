@@ -1,9 +1,11 @@
 package ru.neko.online.client.fragment.game
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
@@ -19,8 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.neko.online.client.R
+import ru.neko.online.client.activity.MainActivity
 import ru.neko.online.client.components.AccountPrefs
 import ru.neko.online.client.components.models.network.FoodToyModel
+import ru.neko.online.client.components.models.network.WaterModel
 import ru.neko.online.client.components.network.NetworkManager
 import ru.neko.online.client.components.viewmodels.MainViewModel
 
@@ -37,6 +41,8 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
     private lateinit var waterCard: MaterialCardView
     private lateinit var toyCard: MaterialCardView
 
+    private lateinit var waterView: View
+
     private lateinit var foodIcon: ImageView
     private lateinit var waterIcon: ImageView
     private lateinit var toyIcon: ImageView
@@ -52,6 +58,7 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
     private val viewModel: MainViewModel by activityViewModels()
 
     private lateinit var controlData: Triple<Boolean, Int, Boolean>
+    private var accountPrefs: AccountPrefs? = null
 
     val toyIcons = intArrayOf(
         R.drawable.ic_toy_mouse,
@@ -65,12 +72,21 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         initView(view)
         controlData = viewModel.controlsLiveData.value!!
         context?.let {
+            accountPrefs = AccountPrefs(it)
             setOnClickListeners(it)
         }
         updateUi()
         viewModel.controlsLiveData.observe(viewLifecycleOwner) {
+            if (it.first != controlData.first) configureFoodCard()
+            if (it.second != controlData.second) configureWaterCard()
+            if (it.third != controlData.third) configureToyCard()
             controlData = it
-            updateUi()
+            accountPrefs?.let { prefs ->
+                prefs.toyState = it.third
+                prefs.waterState = it.second
+                prefs.foodState = it.first
+            }
+
         }
     }
 
@@ -81,6 +97,81 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         toyCard.setOnClickListener {
             toyCardClick(context)
         }
+        setWaterTouchListener(context)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setWaterTouchListener(context: Context) {
+        waterCard.setOnTouchListener { v, event ->
+            var initialX = 0f
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    (activity as MainActivity?)?.setViewPagerScroll(false)
+                    initialX = event.x
+                    waterTip.visibility = View.GONE
+                    return@setOnTouchListener true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+                    val deltaX = (event.x - initialX).coerceAtLeast(1f)
+                    waterView.layoutParams!!.width = deltaX.toInt()
+                    val percentage = updateWaterPercentage(waterView).coerceAtMost(100f)
+                    val result = (percentage * 2).toInt()
+                    waterStatus.text = getString(R.string.control_water_status, result)
+                    accountPrefs?.waterViewWidth = waterView.layoutParams!!.width
+                    accountPrefs?.waterNewTempState = result
+                    return@setOnTouchListener true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    waterView.requestLayout()
+                    (activity as MainActivity?)?.setViewPagerScroll(true)
+                    val result = accountPrefs!!.waterNewTempState
+                    applyNewWaterState(context, result)
+                    return@setOnTouchListener true
+                }
+
+                else -> return@setOnTouchListener false
+            }
+        }
+    }
+
+    private fun applyNewWaterState(context: Context, newValue: Int) {
+        waterCard.alpha = 0.75f
+        waterCard.isEnabled = false
+        lifecycleScope.launch {
+
+            val token = accountPrefs?.userToken
+
+            if (token == null) {
+                withContext(Dispatchers.Main) {
+                    waterCard.alpha = 1f
+                    waterCard.isEnabled = true
+                }
+                return@launch
+            }
+            val network = NetworkManager(context)
+            val result = network.networkPost("controls/water", WaterModel(token, newValue))
+            withContext(Dispatchers.Main) {
+                network.closeClient()
+            }
+            withContext(Dispatchers.Main) {
+                waterCard.alpha = 1f
+                waterCard.isEnabled = true
+            }
+            if (result.second != HttpStatusCode.OK.value) {
+                errorDialog(context)
+            } else {
+                controlData = Triple(controlData.first, newValue, controlData.third)
+                configureWaterCard()
+            }
+        }
+    }
+
+    private fun updateWaterPercentage(water: View?): Float {
+        val parentWidth = waterCard.width
+        val viewWidth = water?.width ?: return 0f
+        return (viewWidth.toFloat() / parentWidth) * 100
     }
 
     private fun foodCardClick(context: Context) {
@@ -88,11 +179,8 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         foodCard.alpha = 0.75f
         foodCard.isEnabled = false
         lifecycleScope.launch {
-            var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
             val token = accountPrefs?.userToken
-
-            accountPrefs = null
 
             if (token == null) {
                 withContext(Dispatchers.Main) {
@@ -124,11 +212,8 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         toyCard.alpha = 0.75f
         toyCard.isEnabled = false
         lifecycleScope.launch {
-            var accountPrefs: AccountPrefs? = AccountPrefs(context)
 
             val token = accountPrefs?.userToken
-
-            accountPrefs = null
 
             if (token == null) {
                 withContext(Dispatchers.Main) {
@@ -206,10 +291,15 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
                 if (half) R.drawable.ic_water_filled else R.drawable.ic_water
             )
         )
-        waterCard.setCardBackgroundColor(getCardBackgroundColor(!isWaterEmpty, COLOR_WATER_BG))
         waterStatus.text =
-            if (!isWaterEmpty) getString(R.string.control_water_status, waterMl) else ""
+            if (!isWaterEmpty) getString(R.string.control_water_status, waterMl) else null
         waterTip.visibility = if (!isWaterEmpty) View.INVISIBLE else View.VISIBLE
+        context?.let {
+            var accountPrefs: AccountPrefs? = AccountPrefs(it)
+            waterView.layoutParams?.width = accountPrefs!!.waterViewWidth
+            accountPrefs = null
+            waterView.requestLayout()
+        }
     }
 
     private fun getCardBackgroundColor(isActive: Boolean, color: Int): ColorStateList {
@@ -234,6 +324,12 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         foodTip = view.findViewById(R.id.foodTip)
         waterTip = view.findViewById(R.id.waterTip)
         toyTip = view.findViewById(R.id.toyTip)
+        waterView = view.findViewById(R.id.waterView)
+        waterView.setBackgroundColor(COLOR_WATER_BG)
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        accountPrefs = null
+    }
 }

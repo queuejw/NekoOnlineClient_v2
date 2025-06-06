@@ -102,6 +102,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun setViewPagerScroll(bool: Boolean) {
+        viewPager?.isUserInputEnabled = bool
+    }
+
     private suspend fun prepareModel(context: Context): Boolean {
         val data = ArrayList<UserprefsModel>()
         var accountPrefs: AccountPrefs? = AccountPrefs(context)

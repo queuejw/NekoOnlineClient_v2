@@ -68,9 +68,17 @@ class AccountPrefs(context: Context) {
         get() = accountPrefs.getInt("water_state", 0)
         set(value) = accountPrefs.edit { putInt("water_state", value) }
 
+    var waterNewTempState
+        get() = accountPrefs.getInt("water_new_state", 0)
+        set(value) = accountPrefs.edit { putInt("water_new_state", value) }
+
     var toyState
         get() = accountPrefs.getBoolean("toy_state", false)
         set(value) = accountPrefs.edit { putBoolean("toy_state", value) }
+
+    var waterViewWidth
+        get() = accountPrefs.getInt("water_view_width", 1)
+        set(value) = accountPrefs.edit { putInt("water_view_width", value) }
 
 
     fun clearServerConfig(): Boolean {
