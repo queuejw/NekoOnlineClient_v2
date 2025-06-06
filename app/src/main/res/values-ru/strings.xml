@@ -30,15 +30,15 @@
         <item>🍪</item>
         <item>🥧</item>
     </string-array>
-    <string name="control_toy_title">Toy</string>
-    <string name="control_toy_subtitle">Tap to use</string>
-    <string name="control_toy_status">Cat attracted!</string>
-    <string name="control_water_title">Water bubbler</string>
-    <string name="control_water_subtitle">Swipe to fill</string>
-    <string name="control_food_title">Food bowl</string>
-    <string name="control_food_subtitle">Tap to refill</string>
-    <string name="control_food_status_full">Full</string>
-    <string name="control_food_status_empty">Empty</string>
+    <string name="control_toy_title">Игрушка</string>
+    <string name="control_toy_subtitle">Нажми, чтобы использовать</string>
+    <string name="control_toy_status">Кот заинтересовался!</string>
+    <string name="control_water_title">Вода</string>
+    <string name="control_water_subtitle">Проведи, чтобы наполнить</string>
+    <string name="control_food_title">Миска с едой</string>
+    <string name="control_food_subtitle">Нажми, чтобы пополнить</string>
+    <string name="control_food_status_full">Полная</string>
+    <string name="control_food_status_empty">Пустая</string>
     <string name="control_water_status">%1$d мЛ</string>
 
     <string name="username_finish_registration_tip">Ваш никнейм в игре: %s\nНажмите на кнопку ниже, чтобы создать аккаунт.</string>
