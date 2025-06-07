@@ -60,6 +60,8 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
     private lateinit var controlData: Triple<Boolean, Int, Boolean>
     private var accountPrefs: AccountPrefs? = null
 
+    private var isDialogVisible = false
+
     val toyIcons = intArrayOf(
         R.drawable.ic_toy_mouse,
         R.drawable.ic_toy_fish,
@@ -114,7 +116,7 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
 
                 MotionEvent.ACTION_MOVE -> {
                     val deltaX = (event.x - initialX).coerceAtLeast(1f)
-                    waterView.layoutParams!!.width = deltaX.toInt()
+                    waterView.layoutParams?.width = deltaX.toInt()
                     val percentage = updateWaterPercentage(waterView).coerceAtMost(100f)
                     val result = (percentage * 2).toInt()
                     waterStatus.text = getString(R.string.control_water_status, result)
@@ -126,8 +128,10 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     waterView.requestLayout()
                     (activity as MainActivity?)?.setViewPagerScroll(true)
-                    val result = accountPrefs!!.waterNewTempState
-                    applyNewWaterState(context, result)
+                    val result = accountPrefs?.waterNewTempState
+                    result?.let {
+                        applyNewWaterState(context, it)
+                    }
                     return@setOnTouchListener true
                 }
 
@@ -241,6 +245,10 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
     }
 
     private fun errorDialog(context: Context) {
+        if(isDialogVisible) {
+            return
+        }
+        isDialogVisible = true
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.error_dialog_title)
             .setIcon(R.drawable.ic_error)
@@ -250,6 +258,9 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
                 startActivity(Intent(Intent.ACTION_VIEW).setData("https://t.me/neko_online".toUri()))
             }
             .setCancelable(false)
+            .setOnDismissListener {
+                isDialogVisible = false
+            }
             .show()
     }
 
@@ -294,10 +305,8 @@ class CatControlsFragment : Fragment(R.layout.cat_controls_fragment) {
         waterStatus.text =
             if (!isWaterEmpty) getString(R.string.control_water_status, waterMl) else null
         waterTip.visibility = if (!isWaterEmpty) View.INVISIBLE else View.VISIBLE
-        context?.let {
-            var accountPrefs: AccountPrefs? = AccountPrefs(it)
-            waterView.layoutParams?.width = accountPrefs!!.waterViewWidth
-            accountPrefs = null
+        accountPrefs?.let { prefs ->
+            waterView.layoutParams?.width = prefs.waterViewWidth
             waterView.requestLayout()
         }
     }
